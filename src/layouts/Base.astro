@@ -154,6 +154,7 @@ aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:
 .axes button{font-size:12.5px}
 .foot{font-size:11px;margin-top:16px;padding-top:8px}
     </style>
+  <script is:inline set:html={`window.B=${JSON.stringify(B)};`}></script>
   </head>
   <body data-page={page} data-expert={SITE.expert.name}>
     <div class="top"><div class="wrap">
@@ -198,7 +199,6 @@ aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:
       <div class="disc">Ответственность за достоверность информации несут оператор сайта и эксперт, указанный в ответе. Мы не несём ответственность за безопасность эксплуатации Вашего автомобиля.</div>
     </div>
     <script is:inline set:html={`window.DEMO_PARTNERS=${JSON.stringify(SITE.demo ? SITE.demoPartners : [])};window.SUPPLIER_URL=${JSON.stringify(SITE.partnerSupplierUrl || (SITE.demo ? 'https://www.avito.ru/' : ''))};window.EXPERT_BOX=${JSON.stringify(`<div class="box"><h4>Эксперт картотеки</h4><div class="exp"><div class="ava">${SITE.expert.initials}</div><div><b>${SITE.expert.name}</b><br><small style="color:var(--muted)">${SITE.expert.line}</small><br><a href="${SITE.expert.url}">Профиль и услуги</a></div></div></div>`)};`} />
-    <script is:inline set:html={`window.B=${JSON.stringify(B)};`}></script>
     <script is:inline src={B + "/js/site.js"}></script>
   </body>
 </html>
