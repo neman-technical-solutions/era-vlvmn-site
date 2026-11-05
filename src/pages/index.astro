@@ -5,15 +5,16 @@ import Base from '../layouts/Base.astro';
 import CardList from '../components/CardList.astro';
 import { cardsByModel } from '../lib/cards';
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 
 const homeBlocks = SITE.homeModels.map((m) => ({ model: m, cards: cardsByModel(m).slice(0, 3) }));
 const website = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: SITE.name,
-  url: `${SITE.url}/`,
+  url: `${SITE.url}${B}/`,
   inLanguage: 'ru',
-  publisher: { '@id': `${SITE.url}/#operator` },
+  publisher: { '@id': `${SITE.url}${B}/#operator` },
 };
 ---
 <Base page="home" title="Ремонт и обслуживание Volvo: симптомы, причины, запчасти по моделям — ЭРА-Вольвоман" description="Что случилось с Вашей Volvo: симптомы и причины по XC90, XC60, XC70, интервалы ТО и напоминание, подбор запчастей по VIN, сервисы Volvo. Карточки по документации Volvo Cars и данным техосмотра, проверяются экспертом." jsonld={[website]}>
@@ -46,7 +47,7 @@ const website = {
       <div class="carbox" aria-label="Напоминание о ТО" style="margin-top:8px">
         <input id="tel" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__">
         <button class="btn ghost" onclick="remindTO()" style="white-space:nowrap">Напоминать</button>
-        <span class="or" id="tel-hint">Если Вы введёте свой номер телефона, мы напомним Вам о предстоящем ТО (сервис бесплатный); раз в неделю мы будем просить Вас сфотографировать пробег, чтобы напоминание было точным. Нажимая «Напоминать», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href="/pd/">Политике ПД</a></span>
+        <span class="or" id="tel-hint">Если Вы введёте свой номер телефона, мы напомним Вам о предстоящем ТО (сервис бесплатный); раз в неделю мы будем просить Вас сфотографировать пробег, чтобы напоминание было точным. Нажимая «Напоминать», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href={B + "/pd/"}>Политике ПД</a></span>
       </div>
     )}
     <div id="cam" class="cam" hidden>
@@ -60,14 +61,14 @@ const website = {
   <section>
     <h2>Модели</h2>
     <div class="chips">
-      {SITE.models.map((m) => <a href={`/models/${m.toLowerCase()}/`}>{m}</a>)}
+      {SITE.models.map((m) => <a href={B + `/models/${m.toLowerCase()}/`}>{m}</a>)}
     </div>
     {homeBlocks.map((b) => (
       <>
-        <h2><a href={`/models/${b.model.toLowerCase()}/`} style="text-decoration:none">Volvo {b.model}: частые проблемы</a></h2>
+        <h2><a href={B + `/models/${b.model.toLowerCase()}/`} style="text-decoration:none">Volvo {b.model}: частые проблемы</a></h2>
         <CardList cards={b.cards} />
       </>
     ))}
-    <p class="note">По данным техосмотра DVSA 2025: 591 792 теста легковых Volvo [Д]. Все карточки — <a href="/models/">по моделям</a>.</p>
+    <p class="note">По данным техосмотра DVSA 2025: 591 792 теста легковых Volvo [Д]. Все карточки — <a href={B + "/models/"}>по моделям</a>.</p>
   </section>
 </Base>

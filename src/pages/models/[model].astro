@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
 import { cardsByModel, AXES } from '../../lib/cards';
 import { SITE } from '../../../site.config.mjs';
+const B = SITE.base;
 
 export function getStaticPaths() {
   return SITE.models.map((m) => ({ params: { model: m.toLowerCase() }, props: { model: m } }));
@@ -17,7 +18,7 @@ const genYears = (label: string) => (AXES.generations as Record<string, string>)
 const situations = AXES.situations.filter((s) => cards.some((c) => c.situationAxis.slug === s.slug));
 ---
 <Base page="model" title={`Volvo ${model}: неисправности, ТО и запчасти по поколениям — ${SITE.name}`} description={`Карточки по Volvo ${model}: поколения, ситуации, причины по частоте, что проверить самому, запчасти.`} crumbs={[{ title: `Volvo ${model}` }]}>
-  <p class="crumbs"><a href="/">Главная</a> › {model}</p>
+  <p class="crumbs"><a href={B + "/"}>Главная</a> › {model}</p>
   <h1>Volvo {model}: неисправности, ТО и запчасти по поколениям</h1>
   <p class="lead">Карточки по модели; общие карточки картотеки показываются здесь же</p>
   {genList.length > 0 && (

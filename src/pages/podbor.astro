@@ -4,11 +4,12 @@
 // Перенос в Astro — ERA-VLVMN-06: разметка и скрипт модуля; добавлены VIN из адреса (?vin=) и из машины с главной, кнопка заявки.
 import Base from '../layouts/Base.astro';
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 const supplierUrl = SITE.partnerSupplierUrl;
 ---
 <Base page="podbor" title={`Подбор запчастей Volvo по VIN, модели и году — ${SITE.name}`} description="Подбор запчастей Volvo по VIN, модели и году выпуска: поколение, раздел, артикул и название для запроса поставщику-партнёру." crumbs={[{ title: 'Подбор запчастей' }]}>
   <div id="podbor">
-    <p class="crumbs"><a href="/">Главная</a> › Подбор запчастей</p>
+    <p class="crumbs"><a href={B + "/"}>Главная</a> › Подбор запчастей</p>
     <h1>Подбор запчастей Volvo</h1>
     <p class="lead">По модели и году выпуска. VIN нужен только чтобы определить модель и год; точную применимость подтверждает продавец.</p>
 
@@ -64,7 +65,7 @@ const supplierUrl = SITE.partnerSupplierUrl;
 #podbor .stat{color:var(--muted);font-size:13px;margin:4px 0 8px}
 #podbor textarea{resize:vertical}
   </style>
-  <script is:inline src="/catalog/vin.js"></script>
+  <script is:inline src={B + "/catalog/vin.js"}></script>
   <script is:inline>
 (async function(){
   const DATA='/catalog/data/';

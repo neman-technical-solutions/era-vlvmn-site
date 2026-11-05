@@ -1,6 +1,9 @@
 // Параметры экземпляра сайта. Правятся здесь, не в шаблонах.
+// Адрес и подпуть: на домене — по умолчанию; для показа на github.io — переменные SITE_URL и SITE_BASE в CI.
+const BASE = (process.env.SITE_BASE || '').replace(/\/$/, '');
 export const SITE = {
-  url: 'https://era-volvoman.ru',
+  url: (process.env.SITE_URL || 'https://era-volvoman.ru').replace(/\/$/, ''),
+  base: BASE,
   name: 'ЭРА-Вольвоман',
   city: 'Москва',
   cities: ['Москва', 'Санкт-Петербург', 'Казань', 'Екатеринбург'],
@@ -20,7 +23,7 @@ export const SITE = {
     { name: '«Шведская мастерская» (условно)', note: 'Любые Volvo · пн–пт 9–18 · ответ до 4 ч', primary: false },
   ],
   // Главный эксперт картотеки (В-10). Именное подтверждение карточки — поле reviewer (станция 7).
-  expert: { name: 'Ян Захарченко', initials: 'ЯЗ', url: '/experts/yan-zakharchenko/', line: 'Volvo: подвеска, ходовая, ГРМ · Москва' },
+  expert: { name: 'Ян Захарченко', initials: 'ЯЗ', url: BASE + '/experts/yan-zakharchenko/', line: 'Volvo: подвеска, ходовая, ГРМ · Москва' },
   // Картотека: соседний клон era-vlvmn; в CI — переменная CARDS_DIR (см. .github/workflows/site.yml)
   cardsDir: '../era-vlvmn/05-content/cards',
   // Модели первой версии (REQ-01 V-2.3), порядок показа

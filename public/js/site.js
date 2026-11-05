@@ -1,3 +1,4 @@
+var B = window.B || '';
 /* ERA-VLVMN — интерактив макета MKT-01 0.53, перенесённый на многостраничный сайт (ERA-VLVMN-06, Q-3 вариант 1, Q-4 вариант 3).
    Имитации камер, ответы ИИ-механика и заявки — демонстрационные: распознавание и база заявок на сайте не реализованы.
    Состояние (машина, пробег, город) живёт в localStorage между страницами. */
@@ -14,7 +15,7 @@ var nextTO = function (o) { return Math.ceil((o + 1) / 15000) * 15000; };
 
 /* Картотека для ссылок из ответов ИИ-механика: /cards.json собирается при сборке. */
 var INDEX = null;
-fetch('/cards.json').then(function (r) { return r.json(); }).then(function (j) { INDEX = j; }).catch(function () {});
+fetch(B+'/cards.json').then(function (r) { return r.json(); }).then(function (j) { INDEX = j; }).catch(function () {});
 function findCard(re, m) {
   if (!INDEX) return null;
   var rx = new RegExp(re, 'i');
@@ -24,14 +25,14 @@ function findCard(re, m) {
 }
 function cardLink(re, label) {
   var c = findCard(re, st.m);
-  var u = c ? c.url : (st.m ? '/models/' + st.m.toLowerCase() + '/' : '/models/');
+  var u = c ? c.url : (st.m ? B+'/models/' + st.m.toLowerCase() + '/' : B+'/models/');
   return '<a href="' + u + '">' + (c ? c.code + ' ' + c.title : label) + '</a>';
 }
 
 /* Город */
 function setCity(c) { S.city = c; save(); document.querySelectorAll('.c').forEach(function (e) { e.textContent = c; }); }
 (function () { var sel = $('city'); if (sel) { if (S.city) sel.value = S.city; setCity(sel.value); } })();
-function goBack() { if (history.length > 1) history.back(); else location.href = '/'; }
+function goBack() { if (history.length > 1) history.back(); else location.href = B+'/'; }
 function track(x) { console.log('goal:', x); }
 function voice() { var q = $('q'); if (q) { q.placeholder = 'Диктовка появится после подключения ИИ-механика'; q.focus(); } }
 
@@ -95,7 +96,7 @@ function pickParts(b) {
   var t = document.createElement('small'); t.style.cssText = 'display:block;color:var(--muted);margin-top:2px';
   t.textContent = myCar ? 'Подбор под ' + myCar.m + ' ' + myCar.y + (myCar.vin ? ', VIN ' + myCar.vin : '') : 'Автомобиль не указан — подбор по модели карточки. Укажите VIN для точного подбора';
   s.prepend(t);
-  var cat = s.querySelector('a[data-catalog]'); if (cat && myCar && myCar.vin) cat.href = '/podbor/?vin=' + myCar.vin;
+  var cat = s.querySelector('a[data-catalog]'); if (cat && myCar && myCar.vin) cat.href = B+'/podbor/?vin=' + myCar.vin;
 }
 function toParts(a) {
   var box = a.closest('.box');
@@ -180,7 +181,7 @@ function setTab(t) {
     var v = $('vin'), pv = $('p-vin'), pc = $('p-contact');
     if (v && v.value.length === 17) pv.value = v.value; else if (myCar && myCar.vin) pv.value = myCar.vin;
     var tel = $('tel'); if (tel && /\d{7,}/.test(tel.value) && !pc.value) pc.value = tel.value;
-    if (pv.value) $('p-catalog').href = '/podbor/?vin=' + pv.value;
+    if (pv.value) $('p-catalog').href = B+'/podbor/?vin=' + pv.value;
   }
 }
 function sendParts() {
@@ -206,8 +207,8 @@ function reply(t) {
   if (step === 3) {
     step = 4; var M = st.m || 'Volvo';
     var src = function (link) { return '<span class="src">Эксперт ответа: ' + EXPERT + ' · Источник: ' + link + '</span>'; };
-    if (/масл|дворник|щётк|лампа|лампоч|расходник|антифриз|омыва|жидкост/i.test(t)) add('a', 'Расходники для Volvo ' + M + ': масло 0W-30 Volvo/Castrol A5/B5 (у Drive-E — 0W-20 VCC RBS0-2AE), дворники 26″/20″ (XC90 I), лампы H7/H11, антифриз Volvo VCS (жёлто-зелёный, не смешивать с G12). Полный список по узлам и ресурсу — в карточке.' + src('<a href="/cons/">Расходники для эксплуатации Volvo ' + M + '</a>'));
-    else if (/(^|[^а-яё])то([^а-яё]|$)|обслуж|регламент/i.test(t)) { var oo = st.odo || 0; add('a', (oo ? 'Ближайшее ТО для Volvo ' + M + ' — <b>' + fmt(nextTO(oo)) + ' км</b> (через ' + fmt(nextTO(oo) - oo) + ' км) или через 12 месяцев после прошлого, что раньше. ' : 'Укажите пробег на главной — посчитаю ближайшее ТО. ') + 'Состав работ по пробегу и году — в карточке.' + src('<a href="/to/">Ближайшее ТО: что менять по пробегу и году</a>')); }
+    if (/масл|дворник|щётк|лампа|лампоч|расходник|антифриз|омыва|жидкост/i.test(t)) add('a', 'Расходники для Volvo ' + M + ': масло 0W-30 Volvo/Castrol A5/B5 (у Drive-E — 0W-20 VCC RBS0-2AE), дворники 26″/20″ (XC90 I), лампы H7/H11, антифриз Volvo VCS (жёлто-зелёный, не смешивать с G12). Полный список по узлам и ресурсу — в карточке.' + src('<a href="'+B+'/cons/">Расходники для эксплуатации Volvo ' + M + '</a>'));
+    else if (/(^|[^а-яё])то([^а-яё]|$)|обслуж|регламент/i.test(t)) { var oo = st.odo || 0; add('a', (oo ? 'Ближайшее ТО для Volvo ' + M + ' — <b>' + fmt(nextTO(oo)) + ' км</b> (через ' + fmt(nextTO(oo) - oo) + ' км) или через 12 месяцев после прошлого, что раньше. ' : 'Укажите пробег на главной — посчитаю ближайшее ТО. ') + 'Состав работ по пробегу и году — в карточке.' + src('<a href="'+B+'/to/">Ближайшее ТО: что менять по пробегу и году</a>')); }
     else if (/сту[кч]|подвеск|кочк|неровност/i.test(t)) add('a', 'По картотеке: глухой стук спереди на мелких неровностях у ' + M + ' чаще всего — стойки стабилизатора или шаровые опоры; проверка 10 минут на подъёмнике. Причины по частоте, что проверить самому и цены — в карточке.' + src(cardLink('стук|стойк|шаров|сайлентблок', 'карточка по подвеске')) + '<br><b>Если стук при торможении или увод руля — к мастеру сегодня.</b>');
     else if (/гул|подшипник/i.test(t)) add('a', 'По картотеке: ровный гул с 60–80 км/ч, меняющийся в повороте, — ступичный подшипник; ресурс 100–150 тыс. км, замена ступицей в сборе 1–1,5 ч.' + src(cardLink('гул|ступи|подшипник', 'карточка по ступичному подшипнику')));
     else if (/nivomat|аморт/i.test(t)) add('a', 'По картотеке: Nivomat — самоподкачивающиеся задние амортизаторы XC90 I; замена на обычные — только парой с пружинами.' + src(cardLink('амортизатор|nivomat', 'карточка по амортизаторам')));
@@ -221,8 +222,8 @@ function reply(t) {
   }
   if (step === 4) {
     if (/не нужно/i.test(t)) { add('a', 'Хорошо. Спрашивайте, если что — я здесь.'); step = 3; return; }
-    if (/серви/i.test(t)) { add('a', '<a href="/partner/">Записаться в сервис-партнёр</a> — форма уйдёт сервису напрямую.'); return; }
-    if (/запчаст/i.test(t)) { add('a', 'Откройте вкладку «Подобрать запчасть по VIN» выше или <a href="/podbor/' + (st.vin ? '?vin=' + st.vin : '') + '">подберите по каталогу</a>; для заявки поставщику оставьте телефон или @telegram.'); return; }
+    if (/серви/i.test(t)) { add('a', '<a href="'+B+'/partner/">Записаться в сервис-партнёр</a> — форма уйдёт сервису напрямую.'); return; }
+    if (/запчаст/i.test(t)) { add('a', 'Откройте вкладку «Подобрать запчасть по VIN» выше или <a href="'+B+'/podbor/' + (st.vin ? '?vin=' + st.vin : '') + '">подберите по каталогу</a>; для заявки поставщику оставьте телефон или @telegram.'); return; }
     if (/@|\+?\d{7,}/.test(t)) { var v = t.match(/[A-HJ-NPR-Z0-9]{17}/i); if (v) st.vin = v[0].toUpperCase(); st.contact = t; logRequest({ contact: t, text: 'из ИИ-механика', kind: 'parts' }); add('a', 'Принято. Заявка' + (st.vin ? ' с VIN ' + st.vin : '') + (st.odo ? ', пробег ' + fmt(st.odo) + ' км' : '') + ' ушла поставщику-партнёру; ответ до 2 часов в рабочее время. Оплата и доставка — по договорённости с поставщиком.'); step = 3; return; }
     add('a', 'Напишите телефон или @telegram — передам партнёру.'); return;
   }
@@ -244,7 +245,7 @@ function toCard() {
   if (next && next >= 180000 && next % 180000 < 15000) extra.push('Ремень ГРМ с роликами и помпой (D5, бензин 5-цил.) — 180 000 км или 10 лет');
   if (age && age >= 10) extra.push('По возрасту ' + age + ' лет: ремень ГРМ, если не менялся 10 лет; охлаждающая жидкость; тормозные шланги — осмотр');
   var ans = next ? 'Ближайшее ТО для Volvo ' + m + (y ? ' ' + y : '') + ' при пробеге ' + fmt(o) + ' км — на <b>' + fmt(next) + ' км</b>, через ' + fmt(next - o) + ' км или 12 месяцев после прошлого, что наступит раньше. Базовый состав — масло и три фильтра, 8–14 тыс. ₽ с работой; на этом пробеге добавляется: ' + (extra.length ? extra.map(function (x) { return x.split(' — ')[0].toLowerCase(); }).join(', ') : 'ничего сверх базового') + '.' : 'Укажите пробег и год на главной — карточка посчитает ближайшее ТО. Регламент Volvo: каждые 15 000 км или 12 месяцев; состав работ меняется на 30, 60, 90 и 180 тыс. км и после 10 лет.';
-  return { id: 'VM-0040', doc: true, crumb: (myCar ? '<a href="/models/' + m.toLowerCase() + '/">' + m + '</a>' : 'Общие') + ' › ТО', title: 'Ближайшее ТО Volvo ' + m + (y ? ' ' + y + ' г.' : '') + ': что менять на ' + (next ? fmt(next) + ' км' : 'ближайшем пробеге') + ' — регламент по пробегу и году',
+  return { id: 'VM-0040', doc: true, crumb: (myCar ? '<a href="'+B+'/models/' + m.toLowerCase() + '/">' + m + '</a>' : 'Общие') + ' › ТО', title: 'Ближайшее ТО Volvo ' + m + (y ? ' ' + y + ' г.' : '') + ': что менять на ' + (next ? fmt(next) + ' км' : 'ближайшем пробеге') + ' — регламент по пробегу и году',
     ans: ans, fit: m + (y ? ', ' + y + ' г.' : '') + '; интервал 15 000 км / 12 мес — ориентир для большинства моделей и двигателей, точный — по VIN',
     signs: ['Подошёл пробег или год с прошлого ТО', 'Сообщение на панели «Время обслуживания»'],
     causes: base.concat(extra.map(function (x) { return '<b>' + x + '</b>'; })), self: ['Проверить уровень масла и охлаждающей жидкости', 'Найти дату и пробег прошлого ТО по сервисной книжке или наклейке под капотом'],
@@ -254,7 +255,7 @@ function toCard() {
 }
 function consCard() {
   var m = myCar ? myCar.m : 'XC90', y = myCar ? myCar.y : null; var de = /XC40|S90|V60|XC60/.test(m) && y && parseInt(y, 10) >= 2015;
-  return { id: 'VM-0041', doc: true, crumb: (myCar ? '<a href="/models/' + m.toLowerCase() + '/">' + m + '</a>' : 'Общие') + ' › Расходники', title: 'Расходники для эксплуатации Volvo ' + m + (y ? ' ' + y + ' г.' : '') + ': масло, фильтры, дворники, лампы, жидкости — что подходит и сколько ходит',
+  return { id: 'VM-0041', doc: true, crumb: (myCar ? '<a href="'+B+'/models/' + m.toLowerCase() + '/">' + m + '</a>' : 'Общие') + ' › Расходники', title: 'Расходники для эксплуатации Volvo ' + m + (y ? ' ' + y + ' г.' : '') + ': масло, фильтры, дворники, лампы, жидкости — что подходит и сколько ходит',
     ans: 'Для Volvo ' + m + (y ? ' ' + y : '') + ': моторное масло ' + (de ? '0W-20 по спецификации Volvo VCC RBS0-2AE (Drive-E)' : '0W-30 или 5W-30 ACEA A5/B5 (Volvo, Castrol Edge Professional)') + ', 6,5–7 л с фильтром; антифриз только Volvo VCS (жёлто-зелёный, не смешивать с G12/G13); тормозная жидкость DOT 4; дворники ' + (/XC90/.test(m) ? '26″ и 20″ (XC90 I), 24″ и 20″ (XC90 II)' : 'по VIN') + ', крючок или штык; лампы ближнего ' + (/XC90|XC70|S80/.test(m) ? 'H7 (галоген) или D2R (ксенон)' : 'H7 / LED по комплектации') + '. Полный комплект на год — 12–20 тыс. ₽ в ценах Москвы, ноябрь 2026.',
     fit: m + (y ? ', ' + y + ' г.' : '') + '; тип лампы, дворников и масла зависит от комплектации и двигателя — проверяется по VIN',
     signs: ['Масло — каждые 15 000 км или 12 мес', 'Дворники — раз в год, перед зимой', 'Антифриз — 5 лет или 150 000 км (VCS)', 'Тормозная жидкость — 2 года', 'Лампы — по факту; ксенон D2R — парой'],
@@ -269,7 +270,7 @@ function renderGen(k) {
   var c = k === 'to' ? toCard() : consCard(); var city = S.city || 'Москва';
   var li = function (a) { return a.map(function (x) { return '<li>' + x + '</li>'; }).join(''); };
   var partners = window.DEMO_PARTNERS || [];
-  el.innerHTML = '<p class="crumbs"><a href="/">Главная</a> › ' + c.crumb + '</p><div class="card"><article>' +
+  el.innerHTML = '<p class="crumbs"><a href="'+B+'/">Главная</a> › ' + c.crumb + '</p><div class="card"><article>' +
     '<p class="eyebrow">Карточка · ' + c.id + ' · из данных</p><p style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0"><span class="pill warn">оценка редакции [О], требует подтверждения экспертом</span>' + (c.doc ? '<span class="pill doc">документация Volvo Cars</span>' : '') + '</p>' +
     '<h1>' + c.title + '</h1><div class="answer">' + c.ans + '</div><p class="fit"><b>Для каких исполнений:</b> ' + c.fit + '</p><div class="sec">' +
     '<h3>' + (c.signsTitle || (c.causesTitle ? 'Когда пора' : 'Признаки')) + '</h3><ul>' + li(c.signs) + '</ul>' +
@@ -277,8 +278,8 @@ function renderGen(k) {
     '<h3>Что проверить самому</h3><ul>' + li(c.self) + '</ul><h3>Когда ехать к специалисту</h3><div class="safety">' + c.safety + '</div>' +
     (c.faq.length ? '<h3>Вопросы и ответы</h3><div class="faq">' + c.faq.map(function (q) { return '<details><summary>' + q[0] + '</summary><p>' + q[1] + '</p></details>'; }).join('') + '</div>' : '') + '</div>' +
     '<div class="meta"><span>Составлено: ' + c.checked + ' · пересмотр до ' + c.until + '</span><span>Автор: редакция ЭРА-Вольвоман · Подтверждение экспертом — ожидается</span><span>Источники: ' + (c.doc ? '<a href="https://www.volvocars.com/ru/support/" target="_blank" rel="noopener">документация Volvo Cars (руководства владельца)</a>; ' : '') + 'регламент ТО Volvo; ориентиры цен Москвы, ноябрь 2026 [О]</span><span>Материал информационный и не заменяет диагностику у специалиста. Текст подготовлен с помощью ИИ; ответственность за рекомендации — оператор сайта и эксперт, указанный в ответе</span></div></article>' +
-    '<aside>' + (partners.length ? '<div class="box" data-nosnippet><h4>Кто починит в <span class="c">' + city + '</span></h4>' + partners.map(function (p, i) { return '<div class="partner"><b>' + p.name + '</b><small>' + p.note + '</small><a class="btn' + (i ? ' ghost' : '') + '" href="/partner/">Записаться</a></div>'; }).join('') + '</div>' : '') +
-    '<div class="box" data-nosnippet><h4>Подобрать запчасти</h4><ul class="parts">' + c.parts.map(function (x) { return '<li>' + x[0] + '<small>' + x[1] + '</small></li>'; }).join('') + '</ul><small style="color:var(--muted)">Ориентир цен, ' + city + ', ноябрь 2026 [О]; артикулы — по VIN</small><button class="btn ghost" style="margin-top:8px" onclick="pickParts(this)">Подобрать под мой автомобиль</button><div class="sellers" hidden>' + (window.SUPPLIER_URL ? '<a href="' + window.SUPPLIER_URL + '" target="_blank" rel="noopener nofollow" onclick="track(\'avito\')"><span>Поставщик-партнёр на Авито: в наличии, доставка</span><small>переход ↗</small></a>' : '') + '<a href="/podbor/" data-catalog><span>Подобрать по каталогу: артикул и название</span><small>на сайте</small></a><a href="/partner/?mode=parts" onclick="toParts(this)"><span>Заявка поставщику: подбор по VIN, счёт, доставка</span><small>ответ до 2 ч</small></a><small style="color:var(--muted)">Переход учтён в статистике карточки</small></div></div>' +
+    '<aside>' + (partners.length ? '<div class="box" data-nosnippet><h4>Кто починит в <span class="c">' + city + '</span></h4>' + partners.map(function (p, i) { return '<div class="partner"><b>' + p.name + '</b><small>' + p.note + '</small><a class="btn' + (i ? ' ghost' : '') + '" href="'+B+'/partner/">Записаться</a></div>'; }).join('') + '</div>' : '') +
+    '<div class="box" data-nosnippet><h4>Подобрать запчасти</h4><ul class="parts">' + c.parts.map(function (x) { return '<li>' + x[0] + '<small>' + x[1] + '</small></li>'; }).join('') + '</ul><small style="color:var(--muted)">Ориентир цен, ' + city + ', ноябрь 2026 [О]; артикулы — по VIN</small><button class="btn ghost" style="margin-top:8px" onclick="pickParts(this)">Подобрать под мой автомобиль</button><div class="sellers" hidden>' + (window.SUPPLIER_URL ? '<a href="' + window.SUPPLIER_URL + '" target="_blank" rel="noopener nofollow" onclick="track(\'avito\')"><span>Поставщик-партнёр на Авито: в наличии, доставка</span><small>переход ↗</small></a>' : '') + '<a href="'+B+'/podbor/" data-catalog><span>Подобрать по каталогу: артикул и название</span><small>на сайте</small></a><a href="'+B+'/partner/?mode=parts" onclick="toParts(this)"><span>Заявка поставщику: подбор по VIN, счёт, доставка</span><small>ответ до 2 ч</small></a><small style="color:var(--muted)">Переход учтён в статистике карточки</small></div></div>' +
     (window.EXPERT_BOX || '') + '</aside></div>';
   setCity(city);
 }

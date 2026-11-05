@@ -5,6 +5,7 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import { marked } from 'marked';
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 import axes from '../data/axes.json';
 
 export type Card = {
@@ -208,7 +209,7 @@ export function loadCards(): Card[] {
     cards.push({
       code,
       slug,
-      url: `/cards/${slug}/`,
+      url: B + `/cards/${slug}/`,
       file,
       raw,
       title: String(data.title ?? ''),

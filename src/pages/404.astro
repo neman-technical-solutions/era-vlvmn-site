@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 ---
 <Base title={`Страница не найдена — ${SITE.name}`}>
-  <section class="paper"><h1>Страницы нет</h1><p>Карточка могла быть переименована. <a href="/models/">Все модели</a> · <a href="/">Главная</a></p></section>
+  <section class="paper"><h1>Страницы нет</h1><p>Карточка могла быть переименована. <a href={B + "/models/"}>Все модели</a> · <a href={B + "/"}>Главная</a></p></section>
 </Base>

@@ -2,6 +2,7 @@
 // Общий каркас страницы: шапка, подвал, canonical, режим индексации (В-15), JSON-LD,
 // панель ИИ-механика (на главной — в потоке, на остальных — выдвижная). Вёрстка — макет MKT-01 0.53.
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 import { loadCards, cardsByModel } from '../lib/cards';
 
 interface Props {
@@ -20,15 +21,15 @@ const n = all.length;
 const faq = SITE.homeModels.flatMap((m) => cardsByModel(m).slice(0, 3).map((c) => ({ m, title: c.title, url: c.url })));
 const org = {
   '@type': 'Organization',
-  '@id': `${SITE.url}/#operator`,
+  '@id': `${SITE.url}${B}/#operator`,
   name: SITE.operator.legalName || SITE.operator.name,
-  url: `${SITE.url}/`,
+  url: `${SITE.url}${B}/`,
 };
 const breadcrumbs = crumbs.length
   ? {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      itemListElement: [{ title: 'Главная', url: '/' }, ...crumbs].map((c, i) => ({
+      itemListElement: [{ title: 'Главная', url: B + '/' }, ...crumbs].map((c, i) => ({
         '@type': 'ListItem',
         position: i + 1,
         name: c.title,
@@ -156,7 +157,7 @@ aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:
   </head>
   <body data-page={page} data-expert={SITE.expert.name}>
     <div class="top"><div class="wrap">
-      <a class="logo" href="/">ЭРА-<b>Вольвоман</b></a>
+      <a class="logo" href={B + "/"}>ЭРА-<b>Вольвоман</b></a>
       <div class="right">
         <label class="region">Город <select id="city" onchange="setCity(this.value)">{SITE.cities.map((c) => <option>{c}</option>)}</select></label>
         <button class="btn ghost" id="back" onclick="goBack()" hidden={page === 'home'}>← Назад</button>
@@ -168,7 +169,7 @@ aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:
         <p class="banner">Закрытый тест: {n} карточек в статусе «требует подтверждения экспертом». Страницы не индексируются.</p>
       )}
       <slot />
-      <p class="foot">Сайт «{SITE.name}» — узел холдинга ЭРА (эксплуатация и ремонт автомобиля); не является официальным ресурсом Volvo Cars. Материалы носят информационный характер и не заменяют диагностику у специалиста; решение о ремонте принимает владелец автомобиля. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в конкретном ответе. · Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''} · <a href="/about/">О проекте</a> · <a href="/pd/">Политика ПД</a> · <span title="В сборке">Оферта — в сборке</span> · <a href="/llms.txt">llms.txt</a></p>
+      <p class="foot">Сайт «{SITE.name}» — узел холдинга ЭРА (эксплуатация и ремонт автомобиля); не является официальным ресурсом Volvo Cars. Материалы носят информационный характер и не заменяют диагностику у специалиста; решение о ремонте принимает владелец автомобиля. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в конкретном ответе. · Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''} · <a href={B + "/about/"}>О проекте</a> · <a href={B + "/pd/"}>Политика ПД</a> · <span title="В сборке">Оферта — в сборке</span> · <a href={B + "/llms.txt"}>llms.txt</a></p>
     </div>
 
     <!-- ИИ-механик: на главной встраивается в #chat-home, на остальных страницах — выдвижная панель -->
@@ -183,20 +184,21 @@ aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:
         <label>Что нужно<textarea id="p-what" rows="3" placeholder="Запчасти или узел: например, стойки стабилизатора передние, пара; масло и фильтры на ТО"></textarea></label>
         <label>Телефон или Telegram<input id="p-contact" placeholder="+7 9.. или @имя"></label>
         <button class="btn" onclick="sendParts()">Отправить поставщику-партнёру</button>
-        <a class="btn ghost" href="/podbor/" id="p-catalog">Подобрать по каталогу самому</a>
-        <small class="or">Нажимая «Отправить», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href="/pd/">Политике ПД</a></small>
+        <a class="btn ghost" href={B + "/podbor/"} id="p-catalog">Подобрать по каталогу самому</a>
+        <small class="or">Нажимая «Отправить», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href={B + "/pd/"}>Политике ПД</a></small>
         <div class="toast" id="p-ok">Заявка ушла поставщику-партнёру. Ответ — до 2 часов в рабочее время. Переход учтён в статистике.</div>
       </div>
       <div class="msgs" id="msgs">
         <div class="msg a" id="faq-box" hidden><b id="faq-h">Наиболее частые вопросы за последний месяц</b><div class="list" id="faq-list" style="margin-top:8px;gap:6px">
-          <a class="row" href="/to/"><span class="t">Ближайшее ТО: что менять по пробегу и году выпуска</span></a>
-          <a class="row" href="/cons/"><span class="t">Расходники для эксплуатации: масло, фильтры, дворники, лампы, жидкости</span></a>
+          <a class="row" href={B + "/to/"}><span class="t">Ближайшее ТО: что менять по пробегу и году выпуска</span></a>
+          <a class="row" href={B + "/cons/"}><span class="t">Расходники для эксплуатации: масло, фильтры, дворники, лампы, жидкости</span></a>
           {faq.map((f) => <a class="row" data-m={f.m} href={f.url}><span class="t">{f.title}</span></a>)}
         </div></div>
       </div>
       <div class="disc">Ответственность за достоверность информации несут оператор сайта и эксперт, указанный в ответе. Мы не несём ответственность за безопасность эксплуатации Вашего автомобиля.</div>
     </div>
     <script is:inline set:html={`window.DEMO_PARTNERS=${JSON.stringify(SITE.demo ? SITE.demoPartners : [])};window.SUPPLIER_URL=${JSON.stringify(SITE.partnerSupplierUrl || (SITE.demo ? 'https://www.avito.ru/' : ''))};window.EXPERT_BOX=${JSON.stringify(`<div class="box"><h4>Эксперт картотеки</h4><div class="exp"><div class="ava">${SITE.expert.initials}</div><div><b>${SITE.expert.name}</b><br><small style="color:var(--muted)">${SITE.expert.line}</small><br><a href="${SITE.expert.url}">Профиль и услуги</a></div></div></div>`)};`} />
-    <script is:inline src="/js/site.js"></script>
+    <script is:inline set:html={`window.B=${JSON.stringify(B)};`}></script>
+    <script is:inline src={B + "/js/site.js"}></script>
   </body>
 </html>

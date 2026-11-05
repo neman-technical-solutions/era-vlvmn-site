@@ -3,6 +3,7 @@
 import Base from '../layouts/Base.astro';
 import { loadCards } from '../lib/cards';
 import { SITE } from '../../site.config.mjs';
+const B = SITE.base;
 const cards = loadCards();
 const models = new Set(cards.flatMap((c) => c.modelKeys.map((k) => k.model)));
 const verified = cards.filter((c) => c.verified).length;
@@ -10,15 +11,15 @@ const latest = cards.map((c) => c.modified).sort().at(-1);
 const operator = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  '@id': `${SITE.url}/#operator`,
+  '@id': `${SITE.url}${B}/#operator`,
   name: SITE.operator.legalName || SITE.operator.name,
-  url: `${SITE.url}/`,
+  url: `${SITE.url}${B}/`,
   description: `Картотека по эксплуатации и ремонту Volvo: ${cards.length} карточек, ${models.size} моделей.`,
 };
 ---
 <Base title={`О проекте — ${SITE.name}`} jsonld={[operator]} crumbs={[{ title: 'О проекте' }]}>
   <article class="paper">
-    <p class="crumbs"><a href="/">Главная</a> › О проекте</p>
+    <p class="crumbs"><a href={B + "/"}>Главная</a> › О проекте</p>
     <h1>О проекте «{SITE.name}»</h1>
     <p>Картотека по эксплуатации и ремонту автомобилей Volvo: симптом → причины по частоте → что проверить самому → когда к специалисту → запчасти. Сайт — узел холдинга ЭРА на платформе NTS-FAB; не является официальным ресурсом Volvo Cars.</p>
     <h2>Факты</h2>
