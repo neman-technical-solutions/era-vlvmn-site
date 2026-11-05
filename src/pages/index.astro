@@ -1,14 +1,12 @@
 ---
-// Главная (REQ-01 V-2.1; тексты — макет MKT-01 0.52). Без поля телефона, камеры и ИИ-механика (В-12, В-15).
+// Главная (REQ-01 V-2.1; вёрстка и тексты — макет MKT-01 0.53, экран «Главная»).
+// VIN и камера, модель и год, пробег, напоминание о ТО (демо, Q-4 вариант 3), панель ИИ-механика в потоке (#chat-home).
 import Base from '../layouts/Base.astro';
 import CardList from '../components/CardList.astro';
-import { loadCards, cardsByModel, AXES } from '../lib/cards';
+import { cardsByModel } from '../lib/cards';
 import { SITE } from '../../site.config.mjs';
 
-const cards = loadCards();
 const homeBlocks = SITE.homeModels.map((m) => ({ model: m, cards: cardsByModel(m).slice(0, 3) }));
-const situations = AXES.situations.map((s) => ({ ...s, n: cards.filter((c) => c.situationAxis.slug === s.slug).length }));
-const nodes = AXES.nodes.map((s) => ({ ...s, n: cards.filter((c) => c.nodeAxis.slug === s.slug).length }));
 const website = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -18,45 +16,58 @@ const website = {
   publisher: { '@id': `${SITE.url}/#operator` },
 };
 ---
-<Base title={`${SITE.name} — эксплуатация и ремонт Volvo: симптомы, причины, запчасти и сервис по моделям`} description="Что случилось с Вашей Volvo? База знаний по эксплуатации и ремонту Volvo: симптомы, причины по частоте, что проверить самому, когда к специалисту, запчасти — по моделям и поколениям." jsonld={[website]}>
-  <section class="paper">
-    <p class="eyebrow">Эксплуатация и ремонт Volvo · {SITE.city}</p>
+<Base page="home" title="Ремонт и обслуживание Volvo: симптомы, причины, запчасти по моделям — ЭРА-Вольвоман" description="Что случилось с Вашей Volvo: симптомы и причины по XC90, XC60, XC70, интервалы ТО и напоминание, подбор запчастей по VIN, сервисы Volvo. Карточки по документации Volvo Cars и данным техосмотра, проверяются экспертом." jsonld={[website]}>
+  <section id="v-home">
+    <p class="eyebrow" style="margin-top:22px">Эксплуатация и ремонт Volvo · <span class="c">{SITE.city}</span></p>
     <h1>Что случилось с Вашей Volvo?</h1>
-    <p class="lead">Симптомы, причины, запчасти и сервис по моделям. База знаний на основе документации производителя, данных техосмотра и практики эксплуатации и ремонта.</p>
-    <h2>Модель</h2>
+    <p class="lead">Диагностика по симптомам, подбор запчастей и сервиса для Volvo XC90, XC60, XC70 и других моделей. Закупка деталей в Европе, Турции, ОАЭ с доставкой до двери по России.</p>
+    <div class="carbox" aria-label="VIN">
+      <button class="btn" onclick="shootVin()" title="Сфотографировать VIN" aria-label="Сфотографировать VIN">📷 VIN</button>
+      <span class="or">или</span>
+      <input id="vin" placeholder="VIN, 17 знаков" maxlength="17" autocapitalize="characters" oninput="vinTyped()">
+      <span class="or">VIN — в СТС, строка «Идентификационный номер (VIN)»; на машине — табличка под лобовым стеклом слева и наклейка на стойке водительской двери. По VIN точнее: поколение, двигатель, подвеска</span>
+    </div>
+    <div id="vcam" class="cam" hidden>
+      <div class="vf"><div class="vf-hint">Наведите камеру на VIN — в СТС или на авто</div><div class="odom vin-odom"><span>YV1CZ59H8A1234567</span></div><div class="vf-frame"></div></div>
+      <div class="row2" style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="snapVin()">📷 Снять</button><button class="btn ghost" onclick="document.getElementById('vcam').hidden=true">Отмена</button><span class="or" id="vcam-st">Фото не сохраняется — распознаём и удаляем</span></div>
+    </div>
+    <div class="carbox" aria-label="Модель и год" style="margin-top:8px">
+      <span class="or">или выберите модель и год</span>
+      <select id="m" onchange="autoCar()"><option value="">Модель</option>{SITE.models.map((m) => <option>{m}</option>)}</select>
+      <select id="y" onchange="autoCar()"><option value="">Год</option></select>
+    </div>
+    <div class="carbox" aria-label="Пробег" style="margin-top:8px">
+      <button class="btn ghost" onclick="shootOdo()" title="Сфотографировать счётчик пробега" aria-label="Сфотографировать счётчик пробега">📷</button>
+      <span class="or">или</span>
+      <input id="odo" inputmode="numeric" placeholder="счётчик пробега, км" oninput="odoTyped()">
+      <span class="or">нужен для более точной диагностики симптома или рекомендации ТО</span>
+    </div>
+    {SITE.demo && (
+      <div class="carbox" aria-label="Напоминание о ТО" style="margin-top:8px">
+        <input id="tel" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__">
+        <button class="btn ghost" onclick="remindTO()" style="white-space:nowrap">Напоминать</button>
+        <span class="or" id="tel-hint">Если Вы введёте свой номер телефона, мы напомним Вам о предстоящем ТО (сервис бесплатный); раз в неделю мы будем просить Вас сфотографировать пробег, чтобы напоминание было точным. Нажимая «Напоминать», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href="/pd/">Политике ПД</a></span>
+      </div>
+    )}
+    <div id="cam" class="cam" hidden>
+      <div class="vf"><div class="vf-hint">Наведите камеру на счётчик пробега</div><div class="odom"><span>1</span><span>8</span><span>7</span><span>0</span><span>2</span><span>6</span><small>km</small></div><div class="vf-frame"></div></div>
+      <div class="row2" style="display:flex;gap:8px;margin-top:8px"><button class="btn" onclick="snapOdo()">📷 Снять</button><button class="btn ghost" onclick="document.getElementById('cam').hidden=true">Отмена</button><span class="or" id="cam-st">Фото не сохраняется — распознаём и удаляем</span></div>
+    </div>
+    <p class="car" id="car"></p>
+    <div id="chat-home"></div>
+  </section>
+
+  <section>
+    <h2>Модели</h2>
     <div class="chips">
       {SITE.models.map((m) => <a href={`/models/${m.toLowerCase()}/`}>{m}</a>)}
     </div>
-    <p class="note">Подбор по фото СТС, расчёт ТО по пробегу и напоминания о ТО появятся после регистрации оператора (персональные данные до регистрации не собираются).</p>
-  </section>
-
-  <section class="paper">
-    <h2>Ситуация</h2>
-    <div class="chips">
-      {situations.map((s) => <a href={`/situations/${s.slug}/`}>{s.title}{s.n ? ` · ${s.n}` : ''}</a>)}
-    </div>
-    <h2>Узел</h2>
-    <div class="chips">
-      {nodes.map((s) => <a href={`/nodes/${s.slug}/`}>{s.title}{s.n ? ` · ${s.n}` : ''}</a>)}
-    </div>
-  </section>
-
-  <section class="paper">
-    <h2>Частые проблемы Volvo по моделям</h2>
     {homeBlocks.map((b) => (
       <>
-        <h3><a href={`/models/${b.model.toLowerCase()}/`}>Volvo {b.model}</a></h3>
+        <h2><a href={`/models/${b.model.toLowerCase()}/`} style="text-decoration:none">Volvo {b.model}: частые проблемы</a></h2>
         <CardList cards={b.cards} />
       </>
     ))}
     <p class="note">По данным техосмотра DVSA 2025: 591 792 теста легковых Volvo [Д]. Все карточки — <a href="/models/">по моделям</a>.</p>
-  </section>
-
-  <section class="paper">
-    <h2>Нет Вашей ситуации?</h2>
-    <p>Спросите ИИ-механика: если карточки нет, тема уйдёт в план, а вопрос — эксперту.</p>
-    {SITE.telegramBotUrl
-      ? <a class="btn" href={SITE.telegramBotUrl} rel="noopener" target="_blank">Спросить в Telegram</a>
-      : <span class="btn disabled">ИИ-механик — после 20 проверенных карточек</span>}
   </section>
 </Base>

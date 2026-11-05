@@ -1,7 +1,8 @@
 ---
 // Карточка: HTML-представление (S3), блоки по NTS-FAB-01 табл. 4 и REQ-01 разд. 3, JSON-LD.
+// Вёрстка — экран «Карточка» макета 0.53: ответ, исполнения, разделы, вопросы, мета; боковые блоки — «кто починит», запчасти, эксперт.
 import Base from '../../../layouts/Base.astro';
-import Status from '../../../components/Status.astro';
+import Pills from '../../../components/Status.astro';
 import { loadCards, md } from '../../../lib/cards';
 import { SITE } from '../../../../site.config.mjs';
 
@@ -11,7 +12,6 @@ export function getStaticPaths() {
 const { card } = Astro.props;
 const pageUrl = `${SITE.url}${card.url}`;
 const sourcesUrl = `${pageUrl}sources/`;
-const mdUrl = `${SITE.url}/cards/${card.slug}.md`;
 const firstModel = card.modelKeys[0];
 
 const operator = { '@type': 'Organization', '@id': `${SITE.url}/#operator`, name: SITE.operator.legalName || SITE.operator.name, url: `${SITE.url}/` };
@@ -38,11 +38,7 @@ if (card.reviewer) article.reviewedBy = { '@type': 'Person', name: card.reviewer
 const faqPage = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: card.faq.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a },
-  })),
+  mainEntity: card.faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 };
 const crumbs = [
   ...(firstModel ? [{ title: `Volvo ${firstModel.model}`, url: `/models/${firstModel.model.toLowerCase()}/` }] : []),
@@ -52,65 +48,55 @@ const safety = card.sections.find((s) => s.title.startsWith('Когда к сп�
 const parts = card.sections.find((s) => s.title.startsWith('Подобрать запчасти'));
 const main = card.sections.filter((s) => s !== safety && s !== parts);
 function fmt(d: string) { const [y, m, dd] = d.split('-'); return `${dd}.${m}.${y}`; }
+const supplierUrl = SITE.partnerSupplierUrl || (SITE.demo ? 'https://www.avito.ru/' : '');
+const partners = SITE.demo ? SITE.demoPartners : [];
+const expertName = card.reviewer || SITE.expert.name;
 ---
-<Base title={`${card.title} — ${SITE.name}`} description={card.short.slice(0, 300)} jsonld={[article, faqPage, { '@context': 'https://schema.org', ...operator }]} crumbs={crumbs}>
-  <article class="paper">
-    <p class="crumbs"><a href="/">Главная</a>{firstModel && <> › <a href={`/models/${firstModel.model.toLowerCase()}/`}>{firstModel.model}</a></>} › {card.nodeAxis.title}</p>
-    <p class="eyebrow">Карточка · {card.code}</p>
-    <h1>{card.title}</h1>
-    <Status card={card} />
-    <div class="short" set:html={md(card.short)} />
-    <p><b>Для каких исполнений:</b> <span set:html={md(card.applicability).replace(/^<p>|<\/p>\s*$/g, '')} /></p>
-
-    {main.map((s) => (
-      <section>
-        <h2>{s.title}</h2>
-        <div set:html={s.html} />
-      </section>
-    ))}
-
-    {safety && (
-      <section>
-        <h2>{safety.title}</h2>
-        <div class="safety" set:html={safety.html} />
-      </section>
-    )}
-
-    <section>
-      <h2>Вопросы и ответы</h2>
-      <dl class="faq">
-        {card.faq.map((f) => (
-          <>
-            <dt set:html={f.qHtml} />
-            <dd set:html={f.aHtml} />
-          </>
-        ))}
-      </dl>
-    </section>
-
-    {parts && (
-      <section>
-        <h2>{parts.title}</h2>
-        <div set:html={parts.html} />
-        <p class="note">Артикулы — по VIN. Подбор под Ваш автомобиль — у поставщика-партнёра:
-          {SITE.partnerSupplierUrl
-            ? <a class="btn" href={SITE.partnerSupplierUrl} rel="nofollow noopener" target="_blank">Объявления поставщика-партнёра ↗</a>
-            : <span class="btn disabled" title="Ссылка на объявления поставщика-партнёра — [ОТКРЫТО]">Объявления поставщика-партнёра</span>}
-        </p>
-      </section>
-    )}
-
-    <section>
-      <h2>Источники</h2>
-      <ul>{card.sourcesList.map((s) => <li set:html={md(s).replace(/^<p>|<\/p>\s*$/g, '')} />)}</ul>
-      <p><b>Источники экспертизы:</b> <a href={`${card.url}sources/`}>перечень источников и материалы проверки по карточке</a></p>
-    </section>
-
-    <section class="meta">
-      <p>Опубликовано: {fmt(card.published)}{card.modified !== card.published && <> · изменено: {fmt(card.modified)}</>} · пересмотр до: {fmt(card.review_by)}</p>
-      {card.changelog && <p>{card.changelog}</p>}
-      <p>Автор: {card.author}{card.reviewer ? ` · Подтвердил: ${card.reviewer}` : ' · Подтверждение экспертом — ожидается'} · <a href={`${card.url}sources/`}>Источники</a> · <a href={`/cards/${card.slug}.md`}>Markdown-версия</a></p>
-      <p>Статус: {card.status}. Числа [Д] — данные (техосмотр DVSA, Великобритания, 2025, лицензия OGL v3.0); [О] — оценка редакции до опроса мастеров. Материал информационный и не заменяет диагностику у специалиста. Текст подготовлен с помощью ИИ; ответственность за рекомендации несут оператор сайта и эксперт, указанный в карточке.</p>
-    </section>
-  </article>
+<Base page="card" title={`${card.title} — ${SITE.name}`} description={card.short.slice(0, 300)} jsonld={[article, faqPage, { '@context': 'https://schema.org', ...operator }]} crumbs={crumbs}>
+  <p class="crumbs"><a href="/">Главная</a>{firstModel && <> › <a href={`/models/${firstModel.model.toLowerCase()}/`}>{firstModel.model}</a></>} › {card.nodeAxis.title}</p>
+  <div class="card">
+    <article>
+      <p class="eyebrow">Карточка · {card.code}</p>
+      <p style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 0"><Pills card={card} /></p>
+      <h1>{card.title}</h1>
+      <div class="answer" set:html={md(card.short)} />
+      <p class="fit"><b>Для каких исполнений:</b> <span set:html={md(card.applicability).replace(/^<p>|<\/p>\s*$/g, '')} /></p>
+      <div class="sec">
+        {main.map((s) => (<><h3>{s.title}</h3><div set:html={s.html} /></>))}
+        {safety && (<><h3>Когда ехать к специалисту</h3><div class="safety" set:html={safety.html} /></>)}
+        <h3>Вопросы и ответы</h3>
+        <div class="faq">
+          {card.faq.map((f) => (<details><summary set:html={f.qHtml.replace(/^<p>|<\/p>\s*$/g, '')} /><div set:html={f.aHtml} /></details>))}
+        </div>
+        <h3>Источники</h3>
+        <ul>{card.sourcesList.map((s) => <li set:html={md(s).replace(/^<p>|<\/p>\s*$/g, '')} />)}</ul>
+        <p><b>Источники экспертизы:</b> <a href={`${card.url}sources/`}>перечень источников и материалы проверки по карточке</a></p>
+      </div>
+      <div class="meta">
+        <span>Опубликовано: {fmt(card.published)}{card.modified !== card.published && <> · изменено: {fmt(card.modified)}</>} · пересмотр до: {fmt(card.review_by)}{card.changelog && <> · {card.changelog}</>}</span>
+        <span>Автор: {card.author} · {card.reviewer ? `Подтвердил: ${card.reviewer}` : 'Подтверждение экспертом — ожидается'}</span>
+        <span>Статус: {card.status}. Числа [Д] — данные (техосмотр DVSA, Великобритания, 2025, лицензия OGL v3.0); [О] — оценка редакции до опроса мастеров.</span>
+        <span>Материал информационный и не заменяет диагностику у специалиста. Текст подготовлен с помощью ИИ; ответственность за рекомендации несут оператор сайта и эксперт, указанный в карточке · <a href={`${card.url}sources/`}>Источники</a> · <a href={`/cards/${card.slug}.md`}>Markdown-версия</a></span>
+      </div>
+    </article>
+    <aside>
+      {partners.length > 0 && (
+        <div class="box" data-nosnippet><h4>Кто починит в <span class="c">{SITE.city}</span></h4>
+          {partners.map((p) => (<div class="partner"><b>{p.name}</b><small>{p.note}</small><a class={`btn${p.primary ? '' : ' ghost'}`} href="/partner/">Записаться</a></div>))}
+        </div>
+      )}
+      <div class="box" data-nosnippet><h4>Подобрать запчасти</h4>
+        {parts ? <div class="sec-parts" set:html={parts.html} /> : <p style="font-size:13.5px;color:var(--muted);margin:0">Перечень запчастей к карточке — по VIN.</p>}
+        <small style="color:var(--muted)">Ориентир цен, <span class="c">{SITE.city}</span>; артикулы — по VIN</small>
+        <button class="btn ghost" style="margin-top:8px" onclick="pickParts(this)">Подобрать под мой автомобиль</button>
+        <div class="sellers" hidden>
+          {supplierUrl && <a href={supplierUrl} target="_blank" rel="noopener nofollow" onclick="track('avito')"><span>Поставщик-партнёр на Авито: в наличии, доставка</span><small>переход ↗</small></a>}
+          <a href="/podbor/" data-catalog><span>Подобрать по каталогу: артикул и название</span><small>на сайте</small></a>
+          <a href="/partner/?mode=parts" onclick="toParts(this)"><span>Заявка поставщику: подбор по VIN, счёт, доставка</span><small>ответ до 2 ч</small></a>
+          <small style="color:var(--muted)">Переход учтён в статистике карточки</small>
+        </div>
+      </div>
+      <div class="box"><h4>{card.reviewer ? 'Эксперт карточки' : 'Эксперт картотеки'}</h4><div class="exp"><div class="ava">{SITE.expert.initials}</div><div><b>{expertName}</b><br><small style="color:var(--muted)">{SITE.expert.line}</small><br><a href={SITE.expert.url}>Профиль и услуги</a></div></div></div>
+    </aside>
+  </div>
 </Base>

@@ -1,5 +1,5 @@
 ---
-// Раздел модели (REQ-01 V-2.2): ось «поколение» обязательна; ситуации.
+// Раздел модели (REQ-01 V-2.2; экран «Раздел модели» макета 0.53): оси «поколение» и «ситуация» — фильтры списка.
 import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
 import { cardsByModel, AXES } from '../../lib/cards';
@@ -10,38 +10,23 @@ export function getStaticPaths() {
 }
 const { model } = Astro.props;
 const cards = cardsByModel(model);
-const gens = new Map<string, typeof cards>();
-for (const c of cards) for (const k of c.modelKeys.filter((k) => k.model === model)) {
-  if (!gens.has(k.label)) gens.set(k.label, []);
-  gens.get(k.label)!.push(c);
-}
-const genList = [...gens.entries()].sort(([a], [b]) => a.localeCompare(b));
-const situations = AXES.situations.map((s) => ({ ...s, cards: cards.filter((c) => c.situationAxis.slug === s.slug) })).filter((s) => s.cards.length);
+const gens = new Map<string, number>();
+for (const c of cards) for (const k of c.modelKeys.filter((k) => k.model === model)) gens.set(k.label, (gens.get(k.label) ?? 0) + 1);
+const genList = [...gens.keys()].sort((a, b) => a.localeCompare(b));
 const genYears = (label: string) => (AXES.generations as Record<string, string>)[label] ?? '';
+const situations = AXES.situations.filter((s) => cards.some((c) => c.situationAxis.slug === s.slug));
 ---
-<Base title={`Volvo ${model}: неисправности, ТО и запчасти по поколениям — ${SITE.name}`} description={`Карточки по Volvo ${model}: поколения, ситуации, причины по частоте, что проверить самому, запчасти.`} crumbs={[{ title: `Volvo ${model}` }]}>
-  <section class="paper">
-    <p class="crumbs"><a href="/">Главная</a> › {model}</p>
-    <h1>Volvo {model}: неисправности, ТО и запчасти по поколениям</h1>
-    <p class="note">Карточки по модели; общие карточки картотеки показываются здесь же.</p>
-    <h2>Поколение</h2>
-    {genList.length === 0 && <p class="note">Карточек по этой модели пока нет.</p>}
-    {genList.map(([label, cs]) => (
-      <section>
-        <h3 id={label.toLowerCase().replace(/\s+/g, '-')}>{label}{genYears(label) ? ` (${genYears(label)})` : ''}</h3>
-        <CardList cards={cs} />
-      </section>
-    ))}
-  </section>
-  {situations.length > 0 && (
-    <section class="paper">
-      <h2>Ситуация</h2>
-      {situations.map((s) => (
-        <section>
-          <h3><a href={`/situations/${s.slug}/`}>{s.title}</a></h3>
-          <CardList cards={s.cards} />
-        </section>
-      ))}
-    </section>
+<Base page="model" title={`Volvo ${model}: неисправности, ТО и запчасти по поколениям — ${SITE.name}`} description={`Карточки по Volvo ${model}: поколения, ситуации, причины по частоте, что проверить самому, запчасти.`} crumbs={[{ title: `Volvo ${model}` }]}>
+  <p class="crumbs"><a href="/">Главная</a> › {model}</p>
+  <h1>Volvo {model}: неисправности, ТО и запчасти по поколениям</h1>
+  <p class="lead">Карточки по модели; общие карточки картотеки показываются здесь же</p>
+  {genList.length > 0 && (
+    <div class="axes" data-axis="gen"><span class="eyebrow">Поколение</span><button class="on" data-v="">Все</button>{genList.map((g) => <button data-v={g}>{g}{genYears(g) ? ` (${genYears(g)})` : ''}</button>)}</div>
   )}
+  {situations.length > 0 && (
+    <div class="axes" data-axis="sit"><span class="eyebrow">Ситуация</span><button class="on" data-v="">Все</button>{situations.map((s) => <button data-v={s.slug}>{s.title}</button>)}</div>
+  )}
+  <CardList cards={cards} model={model} />
+  <p class="note" id="empty" hidden>По выбранным поколению и ситуации карточек нет — снимите фильтр или спросите ИИ-механика.</p>
+  <p class="note">Нет Вашей ситуации? Спросите ИИ-механика: если карточки нет, тема уйдёт в план, а вопрос — эксперту.</p>
 </Base>

@@ -1,11 +1,9 @@
 ---
-// Знаки статуса (Т3.8, V-3.5) и знак источника «документация Volvo Cars».
+// Знаки статуса (Т3.8, V-3.5) и знак источника «документация Volvo Cars» — пилюли макета.
 import type { Card } from '../lib/cards';
 interface Props { card: Card }
 const { card } = Astro.props;
 ---
-<div class="tags">
-  {card.verified ? <span class="tag ok">проверено экспертом</span> : <span class="tag warn">{card.status}</span>}
-  {card.volvoDoc && <span class="tag doc">документация Volvo Cars</span>}
-  <span class="tag">{card.platform === 'все' ? 'общая' : 'платформа ' + card.platform}</span>
-</div>
+{card.verified ? <span class="pill ok">проверено</span> : <span class="pill warn">требует проверки</span>}
+{card.volvoDoc && <span class="pill doc">документация Volvo Cars</span>}
+<span class="m">{card.platform === 'все' ? 'общая' : 'марочная'}</span>

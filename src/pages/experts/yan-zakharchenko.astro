@@ -1,0 +1,24 @@
+---
+// Эксперт картотеки (экран «Эксперт» макета 0.53). Именные подтверждения — по полю reviewer карточек (станция 7).
+import Base from '../../layouts/Base.astro';
+import CardList from '../../components/CardList.astro';
+import { loadCards } from '../../lib/cards';
+import { SITE } from '../../../site.config.mjs';
+const all = loadCards();
+const e = SITE.expert;
+const confirmed = all.filter((c) => c.reviewer === e.name);
+const waiting = all.filter((c) => !c.reviewer);
+const person = { '@context': 'https://schema.org', '@type': 'Person', name: e.name, url: `${SITE.url}${e.url}`, jobTitle: 'Эксперт по Volvo', worksFor: { '@id': `${SITE.url}/#operator` } };
+---
+<Base page="expert" title={`${e.name} — эксперт по Volvo, ${SITE.city} — ${SITE.name}`} jsonld={[person]} crumbs={[{ title: e.name }]}>
+  <p class="crumbs"><a href="/">Главная</a> › Эксперт</p>
+  <div class="exp" style="margin-top:20px"><div class="ava" style="width:56px;height:56px;font-size:20px">{e.initials}</div><div><h1 style="margin:0">{e.name} — эксперт по Volvo, {SITE.city}</h1><small style="color:var(--muted)">Запчасти Volvo с 2020: более 700 сделок с отзывами, без отрицательных (Авито, 12.2022–08.2026) [Д]</small></div></div>
+  <h2>Эксперт в области</h2>
+  <div class="axes"><button class="on">Ситуация: диагностика и ремонт, ТО, подбор запчастей</button><button class="on">Объект: Volvo XC90, XC60, XC70, S60, V70, S80</button><button class="on">Дисциплина: подвеска, амортизаторы, ГРМ, оптика</button><button class="on">Регион: Россия · {SITE.city}</button></div>
+  <h2>Карточки, подтверждённые экспертом ({confirmed.length})</h2>
+  {confirmed.length ? <CardList cards={confirmed} showModels /> : <p class="note">Именных подтверждений пока нет: карточки проходят проверку по опросникам QST-01 и QST-02.</p>}
+  <h2>Карточки на проверке ({waiting.length})</h2>
+  <CardList cards={waiting} showModels />
+  <h2>Услуги и контакты</h2>
+  <p>Подбор запчастей Volvo: <a href="/partner/?mode=parts" onclick="toSeller()">заявка на подбор по VIN</a> — передаётся поставщику-партнёру. Эксперт участвует в опросах картотеки.</p>
+</Base>
