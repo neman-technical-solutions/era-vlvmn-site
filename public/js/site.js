@@ -53,13 +53,25 @@ function setCar(c, how) {
   showCar(how); applyFaq();
 }
 function shootVin() { var c = $('vcam'); c.hidden = false; document.querySelector('.vin-odom').classList.remove('scan'); $('vcam-st').textContent = 'Фото не сохраняется — распознаём и удаляем'; c.scrollIntoView({ block: 'nearest' }); }
-function snapVin() { document.querySelector('.vin-odom').classList.add('scan'); $('vcam-st').textContent = 'Распознано: YV1CZ59H8A1234567'; $('vin').value = 'YV1CZ59H8A1234567'; vinTyped('по фото VIN'); $('vcam').hidden = true; }
+function snapVin() { document.querySelector('.vin-odom').classList.add('scan'); $('vcam-st').textContent = 'Распознано: YV1DZ8256D2374602 (образец)'; $('vin').value = 'YV1DZ8256D2374602'; vinTyped('по фото VIN'); $('vcam').hidden = true; }
+var GENS = null;
+function loadGens(cb) {
+  if (GENS) return cb(GENS);
+  fetch(B + '/catalog/data/index.json').then(function (r) { return r.json(); }).then(function (j) { GENS = j.gens || []; cb(GENS); }).catch(function () { cb([]); });
+}
 function vinTyped(how) {
   var v = ($('vin').value || '').toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, ''); $('vin').value = v;
   if (v.length !== 17) return;
-  /* образец распознавания из макета; разбор VIN по таблице кодов — модуль подбора (/podbor/) */
-  setCar({ m: 'XC90', gen: 'I', y: '2008', eng: '2.5T', vin: v }, (how || 'Определено по VIN') + ' (образец распознавания; фото не сохраняется)');
-  $('m').value = 'XC90'; $('y').value = '2008';
+  var o = $('car'); if (o) { o.className = 'car on'; o.textContent = 'Определяем по VIN…'; }
+  loadGens(function (gens) {
+    var r = window.VolvoVIN ? VolvoVIN.decode(v, gens) : { error: 'Декодер VIN не загружен' };
+    if (r.error) { if (o) { o.className = 'car on'; o.textContent = r.error; } return; }
+    var m = r.gen.model || r.gen.name.split(' ')[0];
+    setCar({ m: m, gen: r.gen.name.replace(m, '').trim() || null, y: String(r.year), vin: v }, (how || 'Определено по VIN') + (r.inRange ? '' : ' — год вне диапазона поколения, проверьте'));
+    var sm = $('m'), sy = $('y');
+    if (sm && [].some.call(sm.options, function (x) { return x.value === m; })) sm.value = m;
+    if (sy && [].some.call(sy.options, function (x) { return x.value === String(r.year); })) sy.value = String(r.year);
+  });
 }
 function autoCar() { if ($('m').value && $('y').value) pickCar(); }
 function pickCar() {
