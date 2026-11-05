@@ -1,0 +1,15 @@
+---
+import Base from '../../layouts/Base.astro';
+import { cardsByModel } from '../../lib/cards';
+import { SITE } from '../../../site.config.mjs';
+const rows = SITE.models.map((m) => ({ m, n: cardsByModel(m).length }));
+---
+<Base title={`Модели Volvo — ${SITE.name}`} crumbs={[{ title: 'Модели' }]}>
+  <section class="paper">
+    <p class="crumbs"><a href="/">Главная</a> › Модели</p>
+    <h1>Модели Volvo</h1>
+    <ul class="cards">
+      {rows.map((r) => <li><a class="t" href={`/models/${r.m.toLowerCase()}/`}>Volvo {r.m}</a><div class="meta">{r.n ? `карточек: ${r.n}` : 'карточек пока нет'}</div></li>)}
+    </ul>
+  </section>
+</Base>

@@ -1,0 +1,17 @@
+---
+import type { Card } from '../lib/cards';
+import Status from './Status.astro';
+interface Props { cards: Card[]; showModels?: boolean }
+const { cards, showModels = false } = Astro.props;
+---
+{cards.length === 0 ? <p class="note">Карточек пока нет.</p> : (
+  <ul class="cards">
+    {cards.map((c) => (
+      <li>
+        <a class="t" href={c.url}>{c.title}</a>
+        <Status card={c} />
+        {showModels && <div class="meta">{c.modelKeys.map((k) => k.label).join(', ')}</div>}
+      </li>
+    ))}
+  </ul>
+)}

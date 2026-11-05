@@ -1,0 +1,19 @@
+---
+import Base from '../../layouts/Base.astro';
+import CardList from '../../components/CardList.astro';
+import { loadCards, AXES } from '../../lib/cards';
+import { SITE } from '../../../site.config.mjs';
+
+export function getStaticPaths() {
+  return AXES.situations.map((s) => ({ params: { slug: s.slug }, props: { axis: s } }));
+}
+const { axis } = Astro.props;
+const cards = loadCards().filter((c) => c.situationAxis.slug === axis.slug);
+---
+<Base title={`Ситуация: ${axis.title} — ${SITE.name}`} crumbs={[{ title: 'Ситуация' }, { title: axis.title }]}>
+  <section class="paper">
+    <p class="crumbs"><a href="/">Главная</a> › Ситуация › {axis.title}</p>
+    <h1>{axis.title}: карточки по Volvo</h1>
+    <CardList cards={cards} showModels={true} />
+  </section>
+</Base>

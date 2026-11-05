@@ -1,0 +1,120 @@
+---
+// Общий каркас страницы: шапка, подвал, canonical, режим индексации (В-15), JSON-LD.
+import { SITE } from '../../site.config.mjs';
+import { loadCards } from '../lib/cards';
+
+interface Props {
+  title: string;
+  description?: string;
+  jsonld?: unknown[];
+  crumbs?: { title: string; url?: string }[];
+}
+const { title, description = '', jsonld = [], crumbs = [] } = Astro.props;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const robots = SITE.mode === 'closed' ? 'noindex, nofollow' : 'index, follow';
+const n = loadCards().length;
+const org = {
+  '@type': 'Organization',
+  '@id': `${SITE.url}/#operator`,
+  name: SITE.operator.legalName || SITE.operator.name,
+  url: `${SITE.url}/`,
+};
+const breadcrumbs = crumbs.length
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [{ title: 'Главная', url: '/' }, ...crumbs].map((c, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: c.title,
+        ...(c.url ? { item: new URL(c.url, SITE.url).href } : {}),
+      })),
+    }
+  : null;
+const ld = [...jsonld, ...(breadcrumbs ? [breadcrumbs] : [])];
+---
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+    <style is:global>
+      :root{--bg:#eef1f4;--paper:#fff;--fg:#14213d;--muted:#5a6578;--line:#cfd6df;--accent:#0b3d91;--accent-fg:#fff;--tint:#e4ebf7;--amber:#c77700;--amber-bg:#fff4e0;--ok:#1e7a46;--warn:#9a4d00;--warn-bg:#fbeedb}
+      *{box-sizing:border-box}
+      html{font-size:16px;-webkit-text-size-adjust:100%}
+      body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.5}
+      a{color:var(--accent)}
+      .wrap{max-width:640px;margin:0 auto;padding:0 16px}
+      header.top{background:var(--paper);border-bottom:1px solid var(--line)}
+      header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px}
+      header.top a.brand{font-weight:700;text-decoration:none;color:var(--fg);letter-spacing:.01em}
+      header.top nav a{margin-left:12px;font-size:.9rem}
+      .banner{background:var(--amber-bg);color:var(--warn);font-size:.85rem;border-bottom:1px solid var(--line)}
+      .banner .wrap{padding:6px 16px}
+      main{padding:20px 0 32px}
+      article.paper,section.paper{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;margin:0 0 16px}
+      h1{font-size:1.45rem;line-height:1.25;margin:.2em 0 .5em}
+      h2{font-size:1.15rem;margin:1.4em 0 .5em}
+      h3{font-size:1rem;margin:1.2em 0 .4em}
+      .eyebrow{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px}
+      .crumbs{font-size:.85rem;color:var(--muted);margin:0 0 8px}
+      .crumbs a{color:var(--muted)}
+      .lead{font-size:1.05rem;margin:0 0 12px}
+      .short{background:var(--tint);border-left:4px solid var(--accent);padding:12px 14px;border-radius:6px;margin:0 0 14px;font-size:1.02rem}
+      .meta{font-size:.85rem;color:var(--muted)}
+      .tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+      .tag{font-size:.75rem;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--muted);white-space:nowrap}
+      .tag.ok{border-color:var(--ok);color:var(--ok);background:#e9f5ee}
+      .tag.warn{border-color:var(--amber);color:var(--warn);background:var(--amber-bg)}
+      .tag.doc{border-color:var(--accent);color:var(--accent);background:var(--tint)}
+      ul.cards{list-style:none;padding:0;margin:0}
+      ul.cards li{border-top:1px solid var(--line);padding:10px 0}
+      ul.cards li:first-child{border-top:0}
+      ul.cards a.t{font-weight:600;text-decoration:none;display:block;margin-bottom:4px}
+      ul.cards a.t:hover{text-decoration:underline}
+      .chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}
+      .chips a{display:inline-block;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);text-decoration:none;color:var(--fg);font-size:.95rem}
+      .chips a:hover{border-color:var(--accent)}
+      .btn{display:inline-block;padding:10px 16px;border-radius:8px;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:600}
+      .btn.disabled{background:var(--line);color:var(--muted);cursor:default}
+      .safety{background:var(--warn-bg);border-left:4px solid var(--amber);padding:10px 14px;border-radius:6px}
+      table{border-collapse:collapse;width:100%;font-size:.95rem;margin:8px 0}
+      th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+      th{background:var(--bg)}
+      dl.faq dt{font-weight:600;margin:12px 0 4px}
+      dl.faq dd{margin:0 0 8px}
+      footer{border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;padding:20px 0 32px}
+      footer p{margin:0 0 8px}
+      .note{font-size:.85rem;color:var(--muted)}
+      .open{color:var(--warn)}
+      @media (min-width:720px){h1{font-size:1.7rem}}
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href="/">{SITE.name}</a>
+        <nav><a href="/models/">Модели</a><a href="/about/">О проекте</a></nav>
+      </div>
+    </header>
+    {SITE.mode === 'closed' && (
+      <div class="banner"><div class="wrap">Закрытый тест: {n} карточек в статусе «требует подтверждения экспертом». Страницы не индексируются.</div></div>
+    )}
+    <main>
+      <div class="wrap">
+        <slot />
+      </div>
+    </main>
+    <footer>
+      <div class="wrap">
+        <p>Сайт «{SITE.name}» — узел холдинга ЭРА (эксплуатация и ремонт автомобиля); не является официальным ресурсом Volvo Cars. Материалы носят информационный характер и не заменяют диагностику у специалиста; решение о ремонте принимает владелец автомобиля. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в конкретном ответе.</p>
+        <p>Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''}. · <a href="/about/">О проекте</a> · <a href="/llms.txt">llms.txt</a></p>
+      </div>
+    </footer>
+  </body>
+</html>

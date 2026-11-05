@@ -1,0 +1,62 @@
+---
+// Главная (REQ-01 V-2.1; тексты — макет MKT-01 0.52). Без поля телефона, камеры и ИИ-механика (В-12, В-15).
+import Base from '../layouts/Base.astro';
+import CardList from '../components/CardList.astro';
+import { loadCards, cardsByModel, AXES } from '../lib/cards';
+import { SITE } from '../../site.config.mjs';
+
+const cards = loadCards();
+const homeBlocks = SITE.homeModels.map((m) => ({ model: m, cards: cardsByModel(m).slice(0, 3) }));
+const situations = AXES.situations.map((s) => ({ ...s, n: cards.filter((c) => c.situationAxis.slug === s.slug).length }));
+const nodes = AXES.nodes.map((s) => ({ ...s, n: cards.filter((c) => c.nodeAxis.slug === s.slug).length }));
+const website = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: `${SITE.url}/`,
+  inLanguage: 'ru',
+  publisher: { '@id': `${SITE.url}/#operator` },
+};
+---
+<Base title={`${SITE.name} — эксплуатация и ремонт Volvo: симптомы, причины, запчасти и сервис по моделям`} description="Что случилось с Вашей Volvo? База знаний по эксплуатации и ремонту Volvo: симптомы, причины по частоте, что проверить самому, когда к специалисту, запчасти — по моделям и поколениям." jsonld={[website]}>
+  <section class="paper">
+    <p class="eyebrow">Эксплуатация и ремонт Volvo · {SITE.city}</p>
+    <h1>Что случилось с Вашей Volvo?</h1>
+    <p class="lead">Симптомы, причины, запчасти и сервис по моделям. База знаний на основе документации производителя, данных техосмотра и практики эксплуатации и ремонта.</p>
+    <h2>Модель</h2>
+    <div class="chips">
+      {SITE.models.map((m) => <a href={`/models/${m.toLowerCase()}/`}>{m}</a>)}
+    </div>
+    <p class="note">Подбор по фото СТС, расчёт ТО по пробегу и напоминания о ТО появятся после регистрации оператора (персональные данные до регистрации не собираются).</p>
+  </section>
+
+  <section class="paper">
+    <h2>Ситуация</h2>
+    <div class="chips">
+      {situations.map((s) => <a href={`/situations/${s.slug}/`}>{s.title}{s.n ? ` · ${s.n}` : ''}</a>)}
+    </div>
+    <h2>Узел</h2>
+    <div class="chips">
+      {nodes.map((s) => <a href={`/nodes/${s.slug}/`}>{s.title}{s.n ? ` · ${s.n}` : ''}</a>)}
+    </div>
+  </section>
+
+  <section class="paper">
+    <h2>Частые проблемы Volvo по моделям</h2>
+    {homeBlocks.map((b) => (
+      <>
+        <h3><a href={`/models/${b.model.toLowerCase()}/`}>Volvo {b.model}</a></h3>
+        <CardList cards={b.cards} />
+      </>
+    ))}
+    <p class="note">По данным техосмотра DVSA 2025: 591 792 теста легковых Volvo [Д]. Все карточки — <a href="/models/">по моделям</a>.</p>
+  </section>
+
+  <section class="paper">
+    <h2>Нет Вашей ситуации?</h2>
+    <p>Спросите ИИ-механика: если карточки нет, тема уйдёт в план, а вопрос — эксперту.</p>
+    {SITE.telegramBotUrl
+      ? <a class="btn" href={SITE.telegramBotUrl} rel="noopener" target="_blank">Спросить в Telegram</a>
+      : <span class="btn disabled">ИИ-механик — после 20 проверенных карточек</span>}
+  </section>
+</Base>
