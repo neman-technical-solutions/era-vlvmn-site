@@ -1,0 +1,155 @@
+---
+// Модуль «Подбор запчастей» (era-vlvmn/05-content/catalog 0.10, ERA-VLVMN-05): VIN или модель-год → поколение → раздел →
+// список «артикул — название»; отбор позиций и текст запроса партнёру. Данные — public/catalog/ (index.json, gen/*.json, vin.js).
+// Перенос в Astro — ERA-VLVMN-06: разметка и скрипт модуля; добавлены VIN из адреса (?vin=) и из машины с главной, кнопка заявки.
+import Base from '../layouts/Base.astro';
+import { SITE } from '../../site.config.mjs';
+const supplierUrl = SITE.partnerSupplierUrl;
+---
+<Base page="podbor" title={`Подбор запчастей Volvo по VIN, модели и году — ${SITE.name}`} description="Подбор запчастей Volvo по VIN, модели и году выпуска: поколение, раздел, артикул и название для запроса поставщику-партнёру." crumbs={[{ title: 'Подбор запчастей' }]}>
+  <div id="podbor">
+    <p class="crumbs"><a href="/">Главная</a> › Подбор запчастей</p>
+    <h1>Подбор запчастей Volvo</h1>
+    <p class="lead">По модели и году выпуска. VIN нужен только чтобы определить модель и год; точную применимость подтверждает продавец.</p>
+
+    <div class="pcard">
+      <label>VIN (17 знаков)
+        <div class="row"><input id="vin" placeholder="YV1CZ…" maxlength="17" autocapitalize="characters" spellcheck="false" style="flex:1"><button id="vinBtn">Определить</button></div>
+      </label>
+      <div id="vinMsg" class="msg"></div>
+      <div class="or">— или —</div>
+      <div class="row">
+        <label>Модель<select id="model"><option value="">выберите</option></select></label>
+        <label>Год выпуска<input id="year" type="number" min="1975" max="2015" placeholder="2008"></label>
+        <label>Поколение<select id="gen"><option value="">—</option></select></label>
+      </div>
+      <div id="car" class="pcar"></div>
+    </div>
+
+    <div class="pcard" id="search" style="display:none">
+      <div class="row">
+        <label>Раздел<select id="cat"><option value="">все разделы</option></select></label>
+        <label>Артикул или название<input id="pq" type="search" placeholder="фильтр, 30748000, сайлентблок"></label>
+      </div>
+      <div class="stat" id="stat"></div>
+      <div id="list"></div>
+    </div>
+
+    <div class="pcard" id="req" style="display:none">
+      <div class="stat" id="reqStat"></div>
+      <textarea id="reqText" rows="6" readonly></textarea>
+      <div class="row" style="margin-top:8px"><button id="copy">Скопировать</button><button id="toPartner" class="sec">Заявка поставщику</button>{supplierUrl && <a class="btn ghost" href={supplierUrl} target="_blank" rel="noopener nofollow">Объявления партнёра ↗</a>}<button id="clear" class="sec">Очистить</button></div>
+      <p class="hint">Текст для сообщения партнёру: машина и выбранные позиции. Цены и наличие сообщает партнёр.</p>
+    </div>
+
+    <p class="hint" style="margin-top:16px">«У партнёра» — артикул встречается в ассортименте партнёра сайта; наличие требует проверки. Цены и наличие сообщает партнёр. Каталог — структура и наименования позиций Volvo 1975–2015 по открытой выгрузке; примечания применимости не показываются.</p>
+  </div>
+
+  <style is:global>
+#podbor .pcard{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+#podbor .row{display:flex;gap:8px;flex-wrap:wrap}
+#podbor label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);flex:1;min-width:120px}
+#podbor input,#podbor select,#podbor button,#podbor textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);min-width:0;width:100%}
+#podbor button{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);cursor:pointer;width:auto;font-weight:600}
+#podbor button.sec{background:var(--paper);color:var(--fg)}
+#podbor .or{text-align:center;color:var(--muted);font-size:13px;margin:8px 0}
+#podbor .msg{font-size:13.5px;margin-top:8px}#podbor .msg.err{color:#b4232c}
+#podbor .pcar{font-weight:600;margin-top:8px;font-size:14px}
+#podbor .hint{font-size:12.5px;color:var(--muted)}
+#podbor .item{display:block;border-top:1px solid var(--line);padding:9px 0;cursor:pointer;color:var(--fg);font-size:14px}#podbor .item input{width:auto;margin-right:6px}
+#podbor .item:first-child{border-top:0}
+#podbor .pn{font-family:var(--mono);font-weight:600}
+#podbor .badge{display:inline-block;background:#e6f5ec;color:var(--ok);border-radius:6px;padding:2px 8px;font-size:11.5px;margin-left:6px;vertical-align:middle}
+#podbor mark{background:#ffe88a;color:#000;padding:0 1px;border-radius:2px}
+#podbor .stat{color:var(--muted);font-size:13px;margin:4px 0 8px}
+#podbor textarea{resize:vertical}
+  </style>
+  <script is:inline src="/catalog/vin.js"></script>
+  <script is:inline>
+(async function(){
+  const DATA='/catalog/data/';
+  const LIMIT=300;
+  const $=id=>document.getElementById(id);
+  const idx=await (await fetch(DATA+'index.json')).json();
+  const {gens,cats,partner}=idx;
+  const models=[...new Set(gens.map(g=>g.model))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  models.forEach(m=>$('model').add(new Option(m,m)));
+  let cur=null, items=[], cache={};
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const hl=(s,w)=>{let h=esc(s);w.forEach(x=>{h=h.replace(new RegExp(x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>'<mark>'+m+'</mark>');});return h;};
+
+  function fillGens(){
+    const m=$('model').value,y=+$('year').value||0,sel=$('gen');
+    sel.innerHTML='<option value="">—</option>';
+    gens.forEach((g,i)=>{if((!m||g.model===m)&&(!y||(y>=g.y1&&y<=g.y2)))sel.add(new Option(`${g.name} (${g.y1}–${g.y2})`,i));});
+    if(sel.options.length===2){sel.selectedIndex=1;pick(+sel.value);}
+    else if(sel.options.length>2&&m&&y){$('car').textContent='Под этот год подходит несколько поколений — выберите.';}
+  }
+  async function pick(i,year){
+    cur=gens[i];
+    $('car').textContent=`${cur.model} · ${cur.name} · ${cur.y1}–${cur.y2}`+(year?` · ваш год ${year}`:'');
+    $('gen').value=i;
+    const c=$('cat');c.innerHTML='<option value="">все разделы</option>';
+    cur.cats.map(ci=>[ci,cats[ci][1]]).sort((a,b)=>a[1].localeCompare(b[1],'ru')).forEach(([ci,n])=>c.add(new Option(n,ci)));
+    $('search').style.display='';
+    $('stat').textContent='Загрузка…';
+    if(!cache[cur.slug])cache[cur.slug]=await (await fetch(DATA+'gen/'+cur.slug+'.json')).json();
+    items=cache[cur.slug];
+    render();
+  }
+  function render(){
+    if(!cur)return;
+    const ci=$('cat').value===''?-1:+$('cat').value;
+    const words=$('pq').value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const res=[];
+    for(const p of items){
+      if(ci>=0&&p[0]!==ci)continue;
+      if(words.length){const s=(p[1]+' '+p[2]+' '+p[3]).toLowerCase();if(!words.every(w=>s.includes(w)))continue;}
+      res.push(p);
+    }
+    res.sort((a,b)=>((b[1] in partner)-(a[1] in partner)));
+    const np=res.filter(p=>p[1] in partner).length;
+    $('stat').textContent=`Найдено: ${res.length.toLocaleString('ru')}`+(np?`, у партнёра: ${np}`:'')+(res.length>LIMIT?` · показаны первые ${LIMIT}`:'');
+    $('list').innerHTML=res.slice(0,LIMIT).map(p=>{
+      const isP=p[1] in partner, key=p[1]||('~'+p[2]);
+      return `<label class="item"><input type="checkbox" data-k="${esc(key)}" ${sel.has(key)?'checked':''}> <span class="pn">${p[1]?hl(p[1],words):'<span class="hint">без артикула</span>'}</span> ${hl(p[2],words)}${isP?'<span class="badge">у партнёра · наличие требует проверки</span>':''}</label>`;
+    }).join('')||'<div class="hint">Ничего не найдено</div>';
+    $('list').querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=()=>{const k=cb.dataset.k;if(cb.checked)sel.set(k,items.find(p=>(p[1]||('~'+p[2]))===k));else sel.delete(k);req();});
+  }
+  const sel=new Map();
+  function reqText(){
+    const lines=[`Volvo ${cur.model} ${cur.name}, ${$('year').value||cur.y1+'–'+cur.y2}`+($('vin').value.trim()?`, VIN ${$('vin').value.trim().toUpperCase()}`:'')];
+    sel.forEach(p=>lines.push(`${p[1]||'без артикула'} — ${p[2]}`));
+    return lines.join('\n');
+  }
+  function req(){
+    const box=$('req');
+    if(!sel.size){box.style.display='none';return;}
+    box.style.display='';
+    $('reqText').value=reqText();
+    $('reqStat').textContent=`Выбрано: ${sel.size}`;
+  }
+  $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('reqText').value);$('copy').textContent='Скопировано';setTimeout(()=>$('copy').textContent='Скопировать',1500);}catch(e){$('reqText').select();}};
+  $('clear').onclick=()=>{sel.clear();req();render();};
+  $('toPartner').onclick=()=>{try{sessionStorage.setItem('vm.pending','Нужны запчасти:\n'+reqText());}catch(e){}location.href='/partner/?mode=parts';};
+  function decode(){
+    const r=VolvoVIN.decode($('vin').value,gens);
+    const m=$('vinMsg');
+    if(r.error){m.className='msg err';m.textContent=r.error;return;}
+    m.className='msg';m.textContent=r.inRange?'':`Модельный год ${r.year} вне годов поколения в каталоге — проверьте VIN.`;
+    $('model').value=r.gen.model;$('year').value=r.inRange?r.year:'';fillGens();
+    pick(gens.indexOf(r.gen),r.year);
+  }
+  $('vinBtn').onclick=decode;
+  $('vin').addEventListener('keydown',e=>{if(e.key==='Enter')$('vinBtn').click();});
+  $('model').onchange=fillGens;$('year').oninput=fillGens;
+  $('gen').onchange=()=>{if($('gen').value!=='')pick(+$('gen').value);};
+  $('cat').onchange=render;
+  let t;$('pq').oninput=()=>{clearTimeout(t);t=setTimeout(render,150);};
+  // VIN из адреса (?vin=) или из машины, указанной на главной
+  let v=new URLSearchParams(location.search).get('vin')||'';
+  if(!v){try{const s=JSON.parse(localStorage.getItem('vm')||'{}');if(s.car&&s.car.vin)v=s.car.vin;else if(s.car&&s.car.m){$('model').value=s.car.m;$('year').value=s.car.y||'';fillGens();}}catch(e){}}
+  if(v){$('vin').value=v.toUpperCase();decode();}
+})();
+  </script>
+</Base>
