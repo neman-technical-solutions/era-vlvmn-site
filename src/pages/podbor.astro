@@ -68,7 +68,7 @@ const supplierUrl = SITE.partnerSupplierUrl;
   <script is:inline src={B + "/catalog/vin.js"}></script>
   <script is:inline>
 (async function(){
-  const DATA='/catalog/data/';
+  const DATA=(window.B||'')+'/catalog/data/';
   const LIMIT=300;
   const $=id=>document.getElementById(id);
   const idx=await (await fetch(DATA+'index.json')).json();
