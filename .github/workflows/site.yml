@@ -25,7 +25,10 @@ jobs:
           repository: neman-technical-solutions/era-vlvmn
           token: ${{ secrets.CONTENT_TOKEN }}
           path: content
-          sparse-checkout: 05-content/cards
+          sparse-checkout: |
+            /05-content/cards/
+          sparse-checkout-cone-mode: false
+      - run: ls content/05-content/cards | head -5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
