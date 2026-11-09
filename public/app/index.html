@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Мой автомобиль — демонстратор</title>
+<!-- ERA-MYAVTO демонстратор приложения «Мой автомобиль», 0.1 от 09.11.2026 (решение ERA-VLVMN-09 / MYAVTO, вариант 1).
+     Сквозной сценарий первого дня: вход по VIN → подтверждение (П-4.2.1, П-5.14) → вопросы онбординга (П-4.2.3) → D1 → первый диалог
+     (П-4.2.6, IV.A1) → обращения с четырьмя статусами (DS-02 разд. 2.5) → экран события (П-4.5.2, П-4.5.3) → «Происшествие» (П-2.6, П-4.8.5).
+     Токены — ../era-tokens.css (DS-02 0.2); собственных токенов нет. Данные вымышленные; всё в браузере, сервера нет. -->
+<link rel="stylesheet" href="../ds/era-tokens.css">
+<style>
+/* Обвязка стенда */
+html{background:#15141A}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center}
+.phone{width:100%;max-width:390px;min-height:100vh;background:var(--era-bg);display:flex;flex-direction:column;position:relative}
+@media (min-width:480px){body{padding:40px 24px}.phone{min-height:0;height:844px;overflow:hidden}}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column}.scroll::-webkit-scrollbar{display:none}
+.screen{display:none;flex:1;flex-direction:column}.screen.on{display:flex}
+.body{flex:1;display:flex;flex-direction:column;padding:var(--era-step-4) var(--era-gutter) var(--era-step-4);gap:var(--era-step-4)}
+p{margin:0}h1,h2{margin:0;font-weight:300}
+.back{color:var(--era-muted);min-height:var(--era-tap);display:inline-flex;align-items:center;text-decoration:none}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:var(--era-step-2)}
+.stack{display:flex;flex-direction:column;gap:var(--era-step-3)}
+.muted{color:var(--era-muted)}
+.btn-primary{display:flex;align-items:center;justify-content:center;height:var(--era-control);width:100%;background:var(--era-surface-2);border-bottom:var(--era-stripe-h) solid var(--era-accent);color:var(--era-text)}
+.btn-secondary{display:flex;align-items:center;justify-content:center;height:var(--era-control);width:100%;border:1px solid var(--era-line);color:var(--era-muted)}
+a{color:inherit;text-decoration:none}
+.row{cursor:pointer}
+.row>div{flex:1;min-width:0}
+.row .title{margin:0}.row .sub{margin:2px 0 0}
+/* D1 */
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start}
+.hero-brand{margin-top:var(--era-step-4);letter-spacing:0.3em}
+.hero-meta{margin-top:var(--era-step-1)}
+.hero-car{position:absolute;left:0;right:0;bottom:36px;display:flex;justify-content:center;z-index:0}
+.hero-date{position:absolute;right:var(--era-gutter);bottom:var(--era-step-4);color:var(--era-text)}
+.dialog{flex:1;display:flex;flex-direction:column;gap:var(--era-step-3);margin-left:calc(-1 * var(--era-gutter));min-height:120px}
+.dialog .replies{margin-left:var(--era-gutter);margin-top:0}
+.speech .who{display:block;margin-bottom:2px}
+.speech.is-prompt{color:var(--era-muted)}
+.user{margin-left:var(--era-gutter);background:var(--era-surface-2);border-left:var(--era-stripe) solid var(--era-accent);padding:var(--era-step-2) var(--era-step-3);align-self:flex-end;max-width:85%}
+/* событие */
+.steps{display:flex;flex-direction:column}
+.step{display:flex;gap:var(--era-step-3);padding:var(--era-step-2) 0;border-bottom:1px solid var(--era-line)}
+.step .dot{width:var(--era-stripe);background:var(--era-line);flex:none}
+.step.done .dot{background:var(--era-text)}.step.now .dot{background:var(--era-accent)}
+.kv{display:grid;grid-template-columns:38% 1fr;gap:var(--era-step-1) var(--era-step-3)}
+.kv dt{color:var(--era-muted);margin:0}.kv dd{margin:0}
+.toast{position:absolute;left:var(--era-gutter);right:var(--era-gutter);top:var(--era-step-4);z-index:9;transition:opacity .3s}
+.toast[hidden]{display:none}
+.demo-note{color:#6F6C7C;text-align:center;padding:8px}
+</style>
+</head>
+<body>
+<main class="phone" aria-label="Мой автомобиль — демонстратор">
+<div class="push toast" id="toast" hidden><div class="t-label push-title">Мой автомобиль</div><div class="t-meta" id="toast-text" style="margin-top:4px;color:var(--era-text)"></div></div>
+<div class="scroll">
+
+<!-- S0. Вход: VIN (П-4.2.1) -->
+<section class="screen on" id="s-start"><div class="body">
+  <div class="t-label" style="letter-spacing:0.3em">Мой автомобиль</div>
+  <h1 class="t-date">Ваш автомобиль</h1>
+  <p class="t-speech muted">Сфотографируйте табличку VIN или техпаспорт — я определю марку, модель, год и двигатель. Ручной ввод — запасной путь.</p>
+  <form class="input-row" onsubmit="return vinGo()" aria-label="VIN">
+    <label class="field t-input"><input id="vin" type="text" maxlength="17" placeholder="VIN, 17 знаков" autocapitalize="characters" autocomplete="off"></label>
+    <button class="btn-square" type="button" aria-label="Сказать голосом" onclick="demoVin()">
+      <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="btn-square is-primary" type="button" aria-label="Сфотографировать" onclick="demoVin()">
+      <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+  </form>
+  <p class="t-meta">Демонстрация: камера и микрофон подставляют пример. Фото документа не хранится и не передаётся.</p>
+  <div id="vin-result" class="stack" hidden>
+    <article class="speech t-speech" style="margin-left:calc(-1 * var(--era-gutter))"><span class="who t-label">ИИ-механик</span><p id="vin-text"></p></article>
+    <div class="replies" style="margin:0"><button class="reply is-primary t-button" type="button" onclick="go('s-onb')">Верно</button><button class="reply is-secondary t-button" type="button" onclick="demoVin(true)">Исправить</button></div>
+  </div>
+  <div style="margin-top:auto"></div>
+  <p class="t-meta muted">Право пользования, документы и второй пользователь — после входа (П-4.2.2, П-4.2.4, П-4.2.9).</p>
+</div></section>
+
+<!-- S0b. Вопросы онбординга (П-4.2.3), по одному -->
+<section class="screen" id="s-onb"><div class="body">
+  <div class="topbar"><a class="back t-meta" href="#" onclick="go('s-start');return false">← Назад</a><span class="t-overline">Volvo XC60 · 2013</span></div>
+  <div class="dialog" id="onb-dialog"></div>
+  <form class="input-row composer" id="onb-form" onsubmit="return onbAnswer()" aria-label="Ответ">
+    <label class="field t-input"><input id="onb-in" type="text" inputmode="numeric" placeholder="Пробег, км" autocomplete="off"></label>
+    <button class="btn-square" type="button" aria-label="Сказать голосом" onclick="document.getElementById('onb-in').value='112 300'">
+      <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="btn-square is-primary" type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+  </form>
+</div></section>
+
+<!-- S1. D1 -->
+<section class="screen" id="s-d1">
+  <section class="hero" aria-label="Автомобиль">
+    <div class="hero-top">
+      <span class="t-overline">Эксплуатация и ремонт автомобиля</span>
+      <button class="btn-incident t-label" type="button" onclick="go('s-inc')">Происшествие</button>
+    </div>
+    <div class="t-label hero-brand">Volvo</div>
+    <h1 class="t-model" style="margin:0">XC60</h1>
+    <div class="t-meta hero-meta">2013 · <span id="d1-km">— км</span></div>
+    <div class="hero-car" aria-hidden="true">
+      <svg width="320" height="120" viewBox="0 0 320 120" fill="#121117"><path d="M18 92 L26 68 C40 60 70 54 96 50 L128 26 C136 20 146 18 160 18 L212 18 C228 18 240 24 250 34 L272 54 C292 58 304 66 306 80 L306 92 Z"/><circle cx="86" cy="94" r="18" fill="#0C0B10"/><circle cx="238" cy="94" r="18" fill="#0C0B10"/><circle cx="86" cy="94" r="8" fill="#232230"/><circle cx="238" cy="94" r="8" fill="#232230"/></svg>
+    </div>
+    <div class="t-date hero-date" id="d1-date"></div>
+  </section>
+  <div class="body" style="padding-top:var(--era-step-4)">
+    <form class="input-row" onsubmit="return setKm()" aria-label="Пробег">
+      <label class="field t-input"><input id="km" type="text" inputmode="numeric" placeholder="Укажи пробег" aria-label="Укажи пробег"></label>
+      <button class="btn-square" type="button" aria-label="Сказать голосом" onclick="document.getElementById('km').value='112 300';setKm()">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <button class="btn-square is-primary" type="button" aria-label="Сфотографировать" onclick="document.getElementById('km').value='112 300';setKm()">
+        <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+    </form>
+    <hr class="hr">
+    <section class="dialog" id="d1-dialog" aria-label="Диалог с механиком"></section>
+    <form class="input-row composer" onsubmit="return askD1()" aria-label="Вопрос механику">
+      <label class="field t-input"><input id="q" type="text" placeholder="Спросить механика" autocomplete="off"></label>
+      <button class="btn-square" type="button" aria-label="Сказать голосом" onclick="document.getElementById('q').value='Стучит спереди на кочках'">
+        <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <button class="btn-square is-primary" type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    </form>
+    <a class="row" href="#" onclick="go('s-list');return false"><div><p class="title t-input">Обращения</p><p class="sub t-meta" id="list-sub">3 · одно ожидает вашего решения</p></div><span class="chip t-label" data-status="waiting">Ожидает</span></a>
+  </div>
+</section>
+
+<!-- S2. Обращения (DS-02 разд. 2.5) -->
+<section class="screen" id="s-list"><div class="body">
+  <div class="topbar"><a class="back t-meta" href="#" onclick="go('s-d1');return false">← Автомобиль</a><span class="t-overline">Volvo XC60 · 2013</span></div>
+  <h1 class="t-date">Обращения</h1>
+  <div class="stack" style="gap:0" id="list"></div>
+  <p class="t-meta muted">Статусы: «В работе», «Принят», «Ожидает», «Закрыто». Акцент — только там, где нужно ваше действие.</p>
+</div></section>
+
+<!-- S3. Экран события (П-4.5.2, П-4.5.3) -->
+<section class="screen" id="s-event"><div class="body">
+  <div class="topbar"><a class="back t-meta" href="#" onclick="go('s-list');return false">← Обращения</a><span class="chip t-label" id="ev-chip" data-status="waiting">Ожидает</span></div>
+  <p class="t-overline" id="ev-type">ТО · Volvo XC60 2013</p>
+  <h1 class="t-date" id="ev-title">ТО-4: масло, фильтры, тормозная жидкость</h1>
+  <article class="speech t-speech" style="margin-left:calc(-1 * var(--era-gutter))"><span class="who t-label">ИИ-механик</span><p id="ev-offer">Подобрал исполнителя: ХАБ Гродно (проверено), он уже знает историю автомобиля. Слот — четверг 14.11, 10:00. Состав по регламенту производителя: масло 0W-30 A5/B5, три фильтра, тормозная жидкость. Цена 14 800 ₽ с работой. Подтвердить запись?</p></article>
+  <div class="replies" style="margin:0" id="ev-actions"><button class="reply is-primary t-button" type="button" onclick="confirmEvent()">Подтвердить</button><button class="reply is-secondary t-button" type="button" onclick="toggleDetails()">Подробности</button><button class="reply is-secondary t-button" type="button" onclick="go('s-list')">Позже</button></div>
+  <div id="ev-details" class="stack" hidden>
+    <dl class="kv t-meta" style="color:var(--era-text)"><dt>Масло 0W-30 A5/B5, 7 л</dt><dd>5 600 ₽</dd><dt>Фильтры: масляный, воздушный, салонный</dt><dd>3 400 ₽</dd><dt>Тормозная жидкость DOT 4</dt><dd>1 200 ₽</dd><dt>Работа</dt><dd>4 600 ₽</dd><dt>Источник регламента</dt><dd>общее правило производителя, 15 000 км / 12 мес</dd></dl>
+  </div>
+  <div class="steps t-meta" id="ev-steps">
+    <div class="step done"><span class="dot"></span><span>Напоминание по пробегу · 9-11-26</span></div>
+    <div class="step now"><span class="dot"></span><span>Подтверждение записи · ожидает вас</span></div>
+    <div class="step"><span class="dot"></span><span>Приём автомобиля · 14-11-26 10:00</span></div>
+    <div class="step"><span class="dot"></span><span>Выполнение · до 14-11-26 13:00</span></div>
+    <div class="step"><span class="dot"></span><span>Закрытие с двух сторон · оплата у партнёра</span></div>
+  </div>
+  <p class="t-meta muted">Исполнитель: ХАБ Гродно · мастер назначается после приёма (грейд виден в наряде).</p>
+</div></section>
+
+<!-- S4. Происшествие (П-2.6, П-4.8.5) -->
+<section class="screen" id="s-inc"><div class="body">
+  <div class="topbar"><a class="back t-meta" href="#" onclick="go('s-d1');return false">← Автомобиль</a><span class="t-overline">Volvo XC60 · 2013</span></div>
+  <h1 class="t-date">Происшествие</h1>
+  <p class="t-speech muted">Что случилось?</p>
+  <div class="stack" id="inc-pick" style="gap:var(--era-step-1)">
+    <button class="btn-primary t-button" type="button" onclick="incident('break')">Поломка в дороге</button>
+    <button class="btn-secondary t-button" type="button" onclick="incident('dtp')">ДТП</button>
+    <button class="btn-secondary t-button" type="button" onclick="incident('other')">Другое</button>
+  </div>
+  <div class="dialog" id="inc-dialog"></div>
+</div></section>
+
+</div>
+</main>
+<p class="demo-note t-meta">Демонстратор приложения «Мой автомобиль» 0.1 · данные вымышленные</p>
+<script>
+var $=function(id){return document.getElementById(id)};
+var fmt=function(n){return Number(n).toLocaleString('ru')};
+var CAR={brand:'Volvo',model:'XC60',year:2013,engine:'D4 2.0 дизель',vin:'YV1DZ8256D2374602'};
+var km=null, remind=false, events=[
+ {id:'e1',type:'ТО',title:'ТО-4: масло, фильтры, тормозная жидкость',who:'ХАБ Гродно',st:'waiting',sub:'подтвердите запись на 14-11-26'},
+ {id:'e2',type:'Заказ детали',title:'Колодки передние · Вольвоман',who:'Вольвоман',st:'accepted',sub:'заказ З-0098 · доставка 12-11-26'},
+ {id:'e3',type:'Наряд',title:'Шиномонтаж · ХАБ Гродно',who:'ХАБ Гродно',st:'closed',sub:'наряд Н-0377 · 03-11-26'}];
+var ST={working:'В работе',accepted:'Принят',waiting:'Ожидает',closed:'Закрыто'};
+function go(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)});document.querySelector('.scroll').scrollTop=0;if(id==='s-onb')onbStart();if(id==='s-d1')d1Start();if(id==='s-list')renderList();if(id==='s-inc'){$('inc-dialog').innerHTML='';$('inc-pick').hidden=false}}
+function el(h){var d=document.createElement('div');d.innerHTML=h.trim();return d.firstChild}
+function say(where,html,prompt){var dlg=$(where);dlg.appendChild(el('<article class="speech t-speech'+(prompt?' is-prompt':'')+'"><span class="who t-label">ИИ-механик</span><p>'+html+'</p></article>'));scrollTo(dlg)}
+function user(where,t){var dlg=$(where);var u=el('<div class="user t-speech"></div>');u.textContent=t;dlg.appendChild(u);scrollTo(dlg)}
+function replies(where,arr){var dlg=$(where);var r=el('<div class="replies"></div>');arr.forEach(function(a,i){var b=el('<button class="reply '+(i?'is-secondary':'is-primary')+' t-button" type="button"></button>');b.textContent=a[0];b.onclick=function(){r.remove();a[1]()};r.appendChild(b)});dlg.appendChild(r);scrollTo(dlg)}
+function scrollTo(dlg){var s=document.querySelector('.scroll');s.scrollTop=s.scrollHeight}
+function toast(t){$('toast-text').textContent=t;$('toast').hidden=false;setTimeout(function(){$('toast').hidden=true},3500)}
+function dateNow(){var d=new Date();return d.getDate()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getFullYear()).slice(-2)}
+/* S0 */
+function demoVin(fix){$('vin').value=CAR.vin;vinGo(fix)}
+function vinGo(fix){var v=$('vin').value.trim().toUpperCase();if(v.length<17){$('vin').focus();return false}
+ $('vin-text').textContent=(fix?'Хорошо, проверяю ещё раз. ':'')+'Считал: '+CAR.brand+' '+CAR.model+', '+CAR.year+' года, двигатель '+CAR.engine+'. Верно?';$('vin-result').hidden=false;return false}
+/* S0b */
+var onbStep=0;
+function onbStart(){var d=$('onb-dialog');d.innerHTML='';onbStep=0;say('onb-dialog','Год и двигатель я уже считал — спрашивать не буду. Два коротких вопроса, и откроем карточку автомобиля.',true);say('onb-dialog','Какой сейчас пробег на одометре? Можно сфотографировать или сказать.');$('onb-in').placeholder='Пробег, км';$('onb-form').hidden=false}
+function onbAnswer(){var v=$('onb-in').value.trim();if(!v)return false;$('onb-in').value='';user('onb-dialog',v);
+ if(onbStep===0){var o=parseInt(v.replace(/\D/g,''),10);if(!o){say('onb-dialog','Нужно число — пробег в километрах.');return false}km=o;onbStep=1;$('onb-form').hidden=true;
+  say('onb-dialog','Записал '+fmt(o)+' км. Как чаще ездите?');replies('onb-dialog',[['Город',function(){onbMode('город')}],['Трасса',function(){onbMode('трасса')}],['Смешанно',function(){onbMode('смешанно')}]]);return false}
+ return false}
+function onbMode(m){user('onb-dialog',m[0].toUpperCase()+m.slice(1));say('onb-dialog','Учту режим «'+m+'» в регламенте. Открываю карточку автомобиля — общий справочник по модели доступен сразу, а информационный пакет именно по вашему автомобилю соберу чуть позже.',true);setTimeout(function(){go('s-d1')},1600)}
+/* S1 */
+var d1Started=false;
+function d1Start(){$('d1-date').textContent=dateNow();$('d1-km').textContent=km?fmt(km)+' км':'— км';if(km)$('km').value=fmt(km);if(d1Started)return;d1Started=true;firstDialog()}
+function firstDialog(){var d=$('d1-dialog');d.innerHTML='';var next=km?Math.ceil((km+1)/15000)*15000:null;
+ if(next)say('d1-dialog','Пробег '+fmt(km)+' км. По общему правилу производителя ближайшее ТО — '+fmt(next)+' км или через 12 месяцев после прошлого. Включить напоминание о ТО по пробегу? Напомню за 1 500 км.');
+ else say('d1-dialog','Укажите пробег — посчитаю ближайшее ТО и предложу напоминание.');
+ if(next)replies('d1-dialog',[['Да, включи',function(){user('d1-dialog','Да, включи');remind=true;say('d1-dialog','Напоминание включено. Вы можете подключить сканирование чеков с АЗС — начну вести учёт расхода топлива и покупок. Это позже, по одному шагу за раз.',true);afterFirst()}],['Позже',function(){user('d1-dialog','Позже');say('d1-dialog','Хорошо, предложу позже.',true);afterFirst()}]])}
+function afterFirst(){say('d1-dialog','Спросите меня о машине — отвечу по справочнику модели и данным техосмотра. Одно обращение ждёт вашего решения.',true)}
+function setKm(){var o=parseInt(($('km').value||'').replace(/\D/g,''),10);if(!o)return false;km=o;$('d1-km').textContent=fmt(km)+' км';$('km').value=fmt(km);if(!remind)firstDialog();else say('d1-dialog','Пробег обновлён: '+fmt(km)+' км. Ближайшее ТО — '+fmt(Math.ceil((km+1)/15000)*15000)+' км.',true);return false}
+function askD1(){var i=$('q');var t=i.value.trim();if(!t)return false;i.value='';user('d1-dialog',t);setTimeout(function(){
+ if(/сту[кч]|кочк|неровн|подвеск/i.test(t))say('d1-dialog','Глухой стук спереди на мелких неровностях у XC60 I чаще всего — стойки стабилизатора: ресурс 40–60 тыс. км, проверка на подъёмнике 10 минут. Хотите, запишу на диагностику подвески в ХАБ Гродно? Слот есть в четверг.');
+ else if(/масл|то\b|обслуж/i.test(t))say('d1-dialog','Для XC60 2013 D4: масло 0W-30 ACEA A5/B5, 5,9 л с фильтром; интервал 15 000 км или 12 месяцев. Замену можно совместить с ТО-4, которое ждёт подтверждения.');
+ else if(/тормоз/i.test(t))say('d1-dialog','«Срочно проверьте тормоза» у XC60 I в 7 случаях из 10 — низкий уровень тормозной жидкости из-за износа колодок. Мягкая педаль — эвакуатор; кнопка «Происшествие» вверху.');
+ else say('d1-dialog','В общем справочнике модели этого нет — передам вопрос эксперту стенда и отвечу уведомлением. Если ситуация срочная — кнопка «Происшествие» вверху.');
+ },300);return false}
+/* S2 */
+function renderList(){var l=$('list');l.innerHTML='';events.forEach(function(e){var r=el('<a class="row" href="#"><div><p class="title t-input"></p><p class="sub t-meta"></p></div><span class="chip t-label"></span></a>');r.querySelector('.title').textContent=e.title;r.querySelector('.sub').textContent=e.sub;var c=r.querySelector('.chip');c.dataset.status=e.st;c.textContent=ST[e.st];r.onclick=function(ev){ev.preventDefault();if(e.id==='e1')openEvent();else toast(e.title+' — '+ST[e.st]+'. Экран события в демонстраторе — для обращения ТО-4.')};l.appendChild(r)});
+ var w=events.filter(function(e){return e.st==='waiting'}).length;$('list-sub').textContent=events.length+(w?' · одно ожидает вашего решения':' · решений не требуется');document.querySelector('#s-d1 .chip').dataset.status=w?'waiting':'working';document.querySelector('#s-d1 .chip').textContent=w?'Ожидает':'В работе'}
+function openEvent(){go('s-event')}
+function toggleDetails(){$('ev-details').hidden=!$('ev-details').hidden}
+function confirmEvent(){var e=events[0];e.st='accepted';e.sub='запись на 14-11-26 10:00 подтверждена';$('ev-chip').dataset.status='accepted';$('ev-chip').textContent='Принят';$('ev-offer').textContent='Запись подтверждена: ХАБ Гродно, четверг 14.11, 10:00. Напомню накануне. Оплата — у партнёра после работ, закрытие с двух сторон.';$('ev-actions').hidden=true;var s=$('ev-steps').children;s[1].className='step done';s[1].querySelector('span:last-child').textContent='Подтверждение записи · '+dateNow();s[2].className='step now';toast('ТО-4 · запись подтверждена на 14-11-26 10:00');renderList()}
+/* S4 */
+function incident(k){$('inc-pick').hidden=true;var d='inc-dialog';
+ if(k==='dtp'){user(d,'ДТП');say(d,'<b>Сначала безопасность: ЭРА-ГЛОНАСС в автомобиле или 112.</b> Если есть пострадавшие — звоните сейчас.');$(d).appendChild(el('<a class="btn-primary t-button" href="tel:112" style="margin-left:var(--era-gutter);width:auto">Позвонить 112</a>'));say(d,'Дальше помогу: фото места и повреждений, европротокол или вызов ГИБДД, уведомление страховщика, эвакуация. По одному шагу.',true);replies(d,[['Начать',function(){say(d,'Шаг 1 из 5: сфотографируйте положение автомобилей и повреждения — фото сохранятся в событии «Происшествие» и уйдут страховщику только по вашему подтверждению.',false)}],['Назад',function(){go('s-d1')}]]);return}
+ if(k==='other'){user(d,'Другое');say(d,'Опишите, что случилось, — открою обращение и подберу исполнителя.');return}
+ user(d,'Поломка в дороге');say(d,'Понял. Чтобы подобрать эвакуатор или выездного механика рядом, нужна ваша геопозиция — один раз, по вашему нажатию. Фоновой геолокации в приложении нет.');
+ replies(d,[['Передать геопозицию',function(){user(d,'Передать геопозицию');say(d,'Геопозиция передана один раз. Ищу исполнителя «проверено» рядом…',true);setTimeout(function(){say(d,'Эвакуатор «Автопомощь-Гродно» (проверено): прибытие 25–35 минут, до ХАБ Гродно — 4 200 ₽. Подтвердить вызов?');replies(d,[['Подтвердить',function(){user(d,'Подтвердить');events.unshift({id:'e0',type:'Происшествие',title:'Поломка в дороге · эвакуатор',who:'Автопомощь-Гродно',st:'working',sub:'эвакуатор в пути · 25–35 мин'});say(d,'Вызов подтверждён. Эвакуатор в пути, статус — в обращениях. Техцентр ХАБ Гродно предупреждён и знает историю автомобиля.',true);toast('Поломка в дороге · эвакуатор в пути');replies(d,[['К обращениям',function(){go('s-list')}]])}],['Другой вариант',function(){user(d,'Другой вариант');say(d,'Выездной механик «проверено»: прибытие 40–60 минут, диагностика на месте 2 500 ₽. Подтвердить?');replies(d,[['Подтвердить',function(){say(d,'Вызов подтверждён. Механик в пути, статус — в обращениях.',true);replies(d,[['К обращениям',function(){go('s-list')}]])}]])}]])},1200)}],['Отмена',function(){go('s-d1')}]])}
+</script>
+</body>
+</html>
