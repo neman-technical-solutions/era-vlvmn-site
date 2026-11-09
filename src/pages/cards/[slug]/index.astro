@@ -3,7 +3,6 @@
 // Оформление — дизайн-система ЭРА; вместо партнёрских блоков — две точки перехода (LOG 09.11.2026).
 import Base from '../../../layouts/Base.astro';
 import Pills from '../../../components/Status.astro';
-import Links from '../../../components/Links.astro';
 import { loadCards, md } from '../../../lib/cards';
 import { SITE } from '../../../../site.config.mjs';
 const B = SITE.base;
@@ -52,7 +51,7 @@ function fmt(d: string) { const [y, m, dd] = d.split('-'); return `${dd}.${m}.${
       <ul class="t-meta">{card.sourcesList.map((s) => <li set:html={md(s).replace(/^<p>|<\/p>\s*$/g, '')} />)}</ul>
       <p class="t-meta"><b>Источники экспертизы:</b> <a href={`${card.url}sources/`}>перечень источников и материалы проверки по карточке</a></p>
     </div>
-    <Links />
+    <p class="t-meta">Спросить ИИ-механика о своей машине, установить приложение «Мой автомобиль» или связаться с экспертом — <a href={B + "/"}>на первом экране</a>.</p>
     <div class="meta t-meta">
       <span>Опубликовано: {fmt(card.published)}{card.modified !== card.published && <> · изменено: {fmt(card.modified)}</>} · пересмотр до: {fmt(card.review_by)}{card.changelog && <> · {card.changelog}</>}</span>
       <span>Автор: {card.author} · {card.reviewer ? `Подтвердил: ${card.reviewer}` : `Эксперт картотеки: ${SITE.expert.name}`}</span>

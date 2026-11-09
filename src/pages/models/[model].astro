@@ -2,7 +2,6 @@
 // Раздел модели (REQ-01 V-2.2): оси «поколение» и «ситуация» — фильтры списка.
 import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
-import Links from '../../components/Links.astro';
 import { cardsByModel, AXES } from '../../lib/cards';
 import { SITE } from '../../../site.config.mjs';
 const B = SITE.base;
@@ -30,5 +29,4 @@ const situations = AXES.situations.filter((s) => cards.some((c) => c.situationAx
   )}
   <CardList cards={cards} model={model} />
   <p class="note t-meta" id="empty" hidden>По выбранным поколению и ситуации карточек нет — снимите фильтр.</p>
-  <Links />
 </Base>

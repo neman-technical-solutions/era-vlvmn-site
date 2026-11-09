@@ -1,11 +1,9 @@
 ---
 // Карточка из данных «Запчасти и расходники» (VM-0041): считается в браузере по машине с главной.
 import Base from '../layouts/Base.astro';
-import Links from '../components/Links.astro';
 import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
 ---
 <Base page="cons" title={`Запчасти и расходники Volvo: масло, фильтры, дворники, лампы, жидкости — ${SITE.name}`} description="Запчасти и расходники Volvo по модели: допуски масла, антифриз VCS, дворники, лампы, периодичность замены и ориентир цен." crumbs={[{ title: 'Запчасти и расходники' }]}>
   <div id="gen" style="display:flex;flex-direction:column;gap:var(--era-step-3)"><p class="note t-meta">Карточка считается по вашему автомобилю — укажите модель и год <a href={B + "/"}>на главной</a>.</p></div>
-  <Links />
 </Base>

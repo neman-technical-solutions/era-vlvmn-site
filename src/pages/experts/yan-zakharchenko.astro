@@ -2,7 +2,6 @@
 // Эксперт картотеки — лицо сайта (В-10, В-14; LOG 09.11.2026). Контакты — прямые; именные подтверждения — по полю reviewer карточек.
 import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
-import Links from '../../components/Links.astro';
 import { loadCards } from '../../lib/cards';
 import { SITE } from '../../../site.config.mjs';
 const B = SITE.base;
@@ -29,5 +28,4 @@ const person = { '@context': 'https://schema.org', '@type': 'Person', '@id': `${
   {confirmed.length ? <CardList cards={confirmed} showModels /> : <p class="note t-meta">Именных подтверждений пока нет.</p>}
   <h2 class="t-label" style="color:var(--era-muted)">Карточки картотеки ({waiting.length})</h2>
   <CardList cards={waiting} showModels />
-  <Links />
 </Base>
