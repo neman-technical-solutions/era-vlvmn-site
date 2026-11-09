@@ -6,11 +6,9 @@ const B = SITE.base;
 const rows = SITE.models.map((m) => ({ m, n: cardsByModel(m).length }));
 ---
 <Base title={`Модели Volvo — ${SITE.name}`} crumbs={[{ title: 'Модели' }]}>
-  <section class="paper">
-    <p class="crumbs"><a href={B + "/"}>Главная</a> › Модели</p>
-    <h1>Модели Volvo</h1>
-    <ul class="cards">
-      {rows.map((r) => <li><a class="t" href={B + `/models/${r.m.toLowerCase()}/`}>Volvo {r.m}</a><div class="meta">{r.n ? `карточек: ${r.n}` : 'карточек пока нет'}</div></li>)}
-    </ul>
-  </section>
+  <p class="crumbs t-meta"><a href={B + "/"}>Главная</a> › Модели</p>
+  <h1 class="t-date">Модели Volvo</h1>
+  <div class="list">
+    {rows.map((r) => <a class="row" href={B + `/models/${r.m.toLowerCase()}/`}><span class="t">Volvo {r.m}</span><span class="t-meta">{r.n ? `карточек: ${r.n}` : 'карточек пока нет'}</span></a>)}
+  </div>
 </Base>

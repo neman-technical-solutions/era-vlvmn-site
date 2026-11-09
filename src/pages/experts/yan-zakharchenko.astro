@@ -1,7 +1,8 @@
 ---
-// Эксперт картотеки (экран «Эксперт» макета 0.53). Именные подтверждения — по полю reviewer карточек (станция 7).
+// Эксперт картотеки — лицо сайта (В-10, В-14; LOG 09.11.2026). Контакты — прямые; именные подтверждения — по полю reviewer карточек.
 import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
+import Links from '../../components/Links.astro';
 import { loadCards } from '../../lib/cards';
 import { SITE } from '../../../site.config.mjs';
 const B = SITE.base;
@@ -9,17 +10,24 @@ const all = loadCards();
 const e = SITE.expert;
 const confirmed = all.filter((c) => c.reviewer === e.name);
 const waiting = all.filter((c) => !c.reviewer);
-const person = { '@context': 'https://schema.org', '@type': 'Person', name: e.name, url: `${SITE.url}${e.url}`, jobTitle: 'Эксперт по Volvo', worksFor: { '@id': `${SITE.url}${B}/#operator` } };
+const wa = `https://wa.me/${e.phone.replace('+', '')}`;
+const tg = e.telegram ? `https://t.me/${e.telegram}` : `https://t.me/${e.phone}`;
+const person = { '@context': 'https://schema.org', '@type': 'Person', '@id': `${SITE.url}${e.url}#person`, name: e.name, alternateName: e.alias, url: `${SITE.url}${e.url}`, telephone: e.phone, jobTitle: 'Эксперт по Volvo', knowsAbout: ['Volvo XC90', 'Volvo XC60', 'Volvo XC70', 'подвеска', 'ТО Volvo', 'запчасти Volvo'], address: { '@type': 'PostalAddress', addressLocality: SITE.city, addressCountry: 'RU' }, worksFor: { '@id': `${SITE.url}${B}/#operator` } };
 ---
-<Base page="expert" title={`${e.name} — эксперт по Volvo, ${SITE.city} — ${SITE.name}`} jsonld={[person]} crumbs={[{ title: e.name }]}>
-  <p class="crumbs"><a href={B + "/"}>Главная</a> › Эксперт</p>
-  <div class="exp" style="margin-top:20px"><div class="ava" style="width:56px;height:56px;font-size:20px">{e.initials}</div><div><h1 style="margin:0">{e.name} — эксперт по Volvo, {SITE.city}</h1><small style="color:var(--muted)">Запчасти Volvo с 2020: более 700 сделок с отзывами, без отрицательных (Авито, 12.2022–08.2026) [Д]</small></div></div>
-  <h2>Эксперт в области</h2>
-  <div class="axes"><button class="on">Ситуация: диагностика и ремонт, ТО, подбор запчастей</button><button class="on">Объект: Volvo XC90, XC60, XC70, S60, V70, S80</button><button class="on">Дисциплина: подвеска, амортизаторы, ГРМ, оптика</button><button class="on">Регион: Россия · {SITE.city}</button></div>
-  <h2>Карточки, подтверждённые экспертом ({confirmed.length})</h2>
-  {confirmed.length ? <CardList cards={confirmed} showModels /> : <p class="note">Именных подтверждений пока нет: карточки проходят проверку по опросникам QST-01 и QST-02.</p>}
-  <h2>Карточки на проверке ({waiting.length})</h2>
+<Base page="expert" title={`${e.name} (${e.alias}) — эксперт по Volvo, ${SITE.city} — ${SITE.name}`} description={`Эксперт картотеки ${SITE.name}: запчасти и ремонт Volvo с 2020 года. Связаться: телефон, WhatsApp, Telegram.`} jsonld={[person]} crumbs={[{ title: e.name }]}>
+  <p class="crumbs t-meta"><a href={B + "/"}>Главная</a> › Эксперт</p>
+  <div class="exp"><div class="ava t-label">{e.initials}</div><div><h1 style="font-size:20px;line-height:1.2">{e.name}</h1><p class="t-meta">{e.alias} · {e.line}</p></div></div>
+  <p class="t-speech">Запчасти Volvo с 2020 года: более 700 сделок с отзывами, без отрицательных (Авито, 12.2022–08.2026) [Д]. Отвечает на вопросы картотеки и подтверждает карточки.</p>
+  <div class="axes"><span class="t-overline">Эксперт в области</span><button class="on t-button" type="button">Диагностика, ремонт, ТО, подбор запчастей</button><button class="on t-button" type="button">Volvo XC90, XC60, XC70, S60, V70, S80</button><button class="on t-button" type="button">Подвеска, амортизаторы, ГРМ, оптика</button><button class="on t-button" type="button">Россия · {SITE.city}</button></div>
+  <h2 class="t-label" style="color:var(--era-muted)">Связаться</h2>
+  <div class="menu" style="margin-top:calc(-1 * var(--era-step-2))">
+    <a class="t-input" href={`tel:${e.phone}`}>Позвонить · {e.phoneHuman}</a>
+    <a class="t-input" href={wa} target="_blank" rel="noopener">WhatsApp</a>
+    <a class="t-input" href={tg} target="_blank" rel="noopener">Telegram</a>
+  </div>
+  <h2 class="t-label" style="color:var(--era-muted)">Карточки, подтверждённые экспертом ({confirmed.length})</h2>
+  {confirmed.length ? <CardList cards={confirmed} showModels /> : <p class="note t-meta">Именных подтверждений пока нет.</p>}
+  <h2 class="t-label" style="color:var(--era-muted)">Карточки картотеки ({waiting.length})</h2>
   <CardList cards={waiting} showModels />
-  <h2>Услуги и контакты</h2>
-  <p>Подбор запчастей Volvo: <a href={B + "/partner/?mode=parts"} onclick="toSeller()">заявка на подбор по VIN</a> — передаётся поставщику-партнёру. Эксперт участвует в опросах картотеки.</p>
+  <Links />
 </Base>

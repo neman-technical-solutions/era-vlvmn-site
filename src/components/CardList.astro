@@ -1,18 +1,18 @@
 ---
-// Список карточек строками макета (.row): заголовок, знаки статуса и источника, вид (марочная/общая).
+// Список карточек строками (.row): заголовок, знаки, модели.
 import type { Card } from '../lib/cards';
 import Pills from './Status.astro';
 interface Props { cards: Card[]; showModels?: boolean; model?: string }
 const { cards, showModels = false, model = '' } = Astro.props;
 const genOf = (c: Card) => (model ? c.modelKeys.filter((k) => k.model === model).map((k) => k.label).join('|') || '*' : '');
 ---
-{cards.length === 0 ? <p class="note">Карточек пока нет.</p> : (
+{cards.length === 0 ? <p class="note t-meta">Карточек пока нет.</p> : (
   <div class="list">
     {cards.map((c) => (
       <a class="row" href={c.url} data-gen={model ? genOf(c) : undefined} data-sit={model ? c.situationAxis.slug : undefined}>
         <span class="t">{c.title}</span>
         <Pills card={c} />
-        {showModels && <span class="m">{c.modelKeys.map((k) => k.label).join(', ')}</span>}
+        {showModels && <span class="t-meta">{c.modelKeys.map((k) => k.label).join(', ')}</span>}
       </a>
     ))}
   </div>

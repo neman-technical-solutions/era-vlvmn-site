@@ -1,7 +1,8 @@
 ---
-// Раздел модели (REQ-01 V-2.2; экран «Раздел модели» макета 0.53): оси «поколение» и «ситуация» — фильтры списка.
+// Раздел модели (REQ-01 V-2.2): оси «поколение» и «ситуация» — фильтры списка.
 import Base from '../../layouts/Base.astro';
 import CardList from '../../components/CardList.astro';
+import Links from '../../components/Links.astro';
 import { cardsByModel, AXES } from '../../lib/cards';
 import { SITE } from '../../../site.config.mjs';
 const B = SITE.base;
@@ -18,16 +19,16 @@ const genYears = (label: string) => (AXES.generations as Record<string, string>)
 const situations = AXES.situations.filter((s) => cards.some((c) => c.situationAxis.slug === s.slug));
 ---
 <Base page="model" title={`Volvo ${model}: неисправности, ТО и запчасти по поколениям — ${SITE.name}`} description={`Карточки по Volvo ${model}: поколения, ситуации, причины по частоте, что проверить самому, запчасти.`} crumbs={[{ title: `Volvo ${model}` }]}>
-  <p class="crumbs"><a href={B + "/"}>Главная</a> › {model}</p>
-  <h1>Volvo {model}: неисправности, ТО и запчасти по поколениям</h1>
-  <p class="lead">Карточки по модели; общие карточки картотеки показываются здесь же</p>
+  <p class="crumbs t-meta"><a href={B + "/"}>Главная</a> › {model}</p>
+  <h1 class="t-date">Volvo {model}: неисправности, ТО и запчасти</h1>
+  <p class="lead t-meta">Карточки по модели и общие карточки картотеки. Спросить ИИ-механика о своей машине — <a href={B + "/"}>на главной</a>.</p>
   {genList.length > 0 && (
-    <div class="axes" data-axis="gen"><span class="eyebrow">Поколение</span><button class="on" data-v="">Все</button>{genList.map((g) => <button data-v={g}>{g}{genYears(g) ? ` (${genYears(g)})` : ''}</button>)}</div>
+    <div class="axes" data-axis="gen"><span class="t-overline">Поколение</span><button class="on t-button" data-v="">Все</button>{genList.map((g) => <button class="t-button" data-v={g}>{g}{genYears(g) ? ` (${genYears(g)})` : ''}</button>)}</div>
   )}
   {situations.length > 0 && (
-    <div class="axes" data-axis="sit"><span class="eyebrow">Ситуация</span><button class="on" data-v="">Все</button>{situations.map((s) => <button data-v={s.slug}>{s.title}</button>)}</div>
+    <div class="axes" data-axis="sit"><span class="t-overline">Ситуация</span><button class="on t-button" data-v="">Все</button>{situations.map((s) => <button class="t-button" data-v={s.slug}>{s.title}</button>)}</div>
   )}
   <CardList cards={cards} model={model} />
-  <p class="note" id="empty" hidden>По выбранным поколению и ситуации карточек нет — снимите фильтр или спросите ИИ-механика.</p>
-  <p class="note">Нет Вашей ситуации? Спросите ИИ-механика: если карточки нет, тема уйдёт в план, а вопрос — эксперту.</p>
+  <p class="note t-meta" id="empty" hidden>По выбранным поколению и ситуации карточек нет — снимите фильтр.</p>
+  <Links />
 </Base>

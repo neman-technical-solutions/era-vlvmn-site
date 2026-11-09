@@ -1,41 +1,26 @@
 ---
-// Общий каркас страницы: шапка, подвал, canonical, режим индексации (В-15), JSON-LD,
-// панель ИИ-механика (на главной — в потоке, на остальных — выдвижная). Вёрстка — макет MKT-01 0.53.
+// Общий каркас страницы: шапка, подвал, canonical, режим индексации (В-15), JSON-LD.
+// Оформление — дизайн-система ЭРА (ERA-MYAVTO-DS-02 0.2): токены public/ds/era-tokens.css, здесь — только слой применений сайта.
+// Формат — мобильный, одна колонка 390 px (LOG 09.11.2026, 0.59); на широком экране колонка по центру.
 import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
-import { loadCards, cardsByModel } from '../lib/cards';
+import { loadCards } from '../lib/cards';
 
 interface Props {
   title: string;
   description?: string;
   jsonld?: unknown[];
   crumbs?: { title: string; url?: string }[];
-  page?: string; // 'home' — панель ИИ-механика встраивается в #chat-home
+  page?: string;
 }
 const { title, description = '', jsonld = [], crumbs = [], page = '' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
 const robots = SITE.mode === 'closed' ? 'noindex, nofollow' : 'index, follow';
-const all = loadCards();
-const n = all.length;
-// Частые вопросы в панели: по три карточки на модель главной + динамические ТО и расходники.
-const faq = SITE.homeModels.flatMap((m) => cardsByModel(m).slice(0, 3).map((c) => ({ m, title: c.title, url: c.url })));
-const org = {
-  '@type': 'Organization',
-  '@id': `${SITE.url}${B}/#operator`,
-  name: SITE.operator.legalName || SITE.operator.name,
-  url: `${SITE.url}${B}/`,
-};
+const n = loadCards().length;
+const org = { '@type': 'Organization', '@id': `${SITE.url}${B}/#operator`, name: SITE.operator.legalName || SITE.operator.name, url: `${SITE.url}${B}/` };
 const breadcrumbs = crumbs.length
-  ? {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [{ title: 'Главная', url: B + '/' }, ...crumbs].map((c, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        name: c.title,
-        ...(c.url ? { item: new URL(c.url, SITE.url).href } : {}),
-      })),
-    }
+  ? { '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+      itemListElement: [{ title: 'Главная', url: B + '/' }, ...crumbs].map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.title, ...(c.url ? { item: new URL(c.url, SITE.url).href } : {}) })) }
   : null;
 const ld = [...jsonld, ...(breadcrumbs ? [breadcrumbs] : [])];
 ---
@@ -47,159 +32,122 @@ const ld = [...jsonld, ...(breadcrumbs ? [breadcrumbs] : [])];
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#2B2A35" />
     <link rel="canonical" href={canonical} />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href={B + "/ds/era-tokens.css"} />
     {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
     <style is:global>
-:root{--bg:#eef1f4;--paper:#fff;--fg:#14213d;--muted:#5a6578;--line:#cfd6df;--accent:#0b3d91;--accent-fg:#fff;--tint:#e4ebf7;--amber:#c77700;--amber-bg:#fff4e0;--ok:#1e7a46;--warn:#9a4d00;--warn-bg:#fbeedb;--mono:"IBM Plex Mono",monospace}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1419;--paper:#171d24;--fg:#e6eaf0;--muted:#98a4b3;--line:#2b343f;--accent:#8fb3ff;--accent-fg:#0b1220;--tint:#1d2a3f;--amber:#f0b25a;--amber-bg:#3a2c12;--ok:#6fcf97;--warn:#f0b25a;--warn-bg:#3a2a12;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0f1419;--paper:#171d24;--fg:#e6eaf0;--muted:#98a4b3;--line:#2b343f;--accent:#8fb3ff;--accent-fg:#0b1220;--tint:#1d2a3f;--amber:#f0b25a;--amber-bg:#3a2c12;--ok:#6fcf97;--warn:#f0b25a;--warn-bg:#3a2a12;color-scheme:dark}
-*{box-sizing:border-box}html,body{height:100%}[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
-a{color:var(--accent)}button{font:inherit;cursor:pointer}
-.wrap{max-width:1080px;margin:0 auto;padding:0 16px 32px}
-.top{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:2px solid var(--accent)}
-.top .wrap{display:flex;align-items:center;gap:14px;padding:10px 16px;flex-wrap:wrap}
-.logo{font-weight:700;font-size:20px;text-decoration:none;color:var(--fg)}.logo b{color:var(--accent)}
-.right{margin-left:auto;display:flex;gap:8px;align-items:center}
-.region{font-size:12px;color:var(--muted)}.region select{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
-h1{font-weight:700;font-size:28px;line-height:1.15;margin:22px 0 8px;text-wrap:balance}
-h2{font-weight:600;font-size:19px;margin:28px 0 10px}
-.sec h3{font-size:15px;margin:22px 0 6px;font-weight:700}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.lead{max-width:65ch;color:var(--muted);margin:0 0 6px}
-.carbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:14px 0 4px}
-.carbox input,.carbox select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--bg);color:var(--fg);font:inherit}
-.carbox .or{color:var(--muted);font-size:13px}
-.car{display:none;font-size:13px;color:var(--muted);margin:6px 0 0}.car.on{display:block}.car b{color:var(--fg)}
-.btn{display:inline-block;border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);border-radius:6px;padding:8px 14px;font-weight:600;text-decoration:none;font-size:14px}
-.btn.ghost{background:transparent;color:var(--accent)}.btn.amber{background:var(--amber);border-color:var(--amber);color:#1a1200}
-.btn.disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:default}
-.axes{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;align-items:center}
-.axes button{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--fg)}
-.axes button.on{border-color:var(--accent);background:var(--tint)}.axes button.other{color:var(--accent);border-color:var(--accent);font-weight:600}
-.to{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:8px;padding:12px 14px;margin:14px 0;display:grid;gap:8px;max-width:65ch}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
-.tile{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px}.tile b{display:block;font-size:15px;margin-bottom:6px}.tile ul{margin:0;padding-left:18px;font-size:13.5px}.tile ul a{text-decoration:none}
-.list{display:grid;gap:8px;margin-top:14px}
-.row{display:flex;gap:12px;align-items:baseline;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 14px;text-decoration:none;color:inherit;flex-wrap:wrap}
-.row .t{font-weight:600;flex:1 1 260px}.row .m{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.pill{font-size:11.5px;border-radius:999px;padding:1px 8px;border:1px solid}.pill.ok{color:var(--ok);border-color:var(--ok)}.pill.doc{color:var(--accent);border-color:var(--accent)}.pill.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
-.crumbs{font-size:13px;color:var(--muted);margin-top:16px}.crumbs a{text-decoration:none}
-.card{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;margin-top:8px}@media(max-width:820px){.card{grid-template-columns:1fr}}
-.answer{background:var(--amber-bg);border-left:4px solid var(--amber);padding:14px 18px;border-radius:0 8px 8px 0;font-size:16px;margin:14px 0 8px;max-width:65ch}
-.answer p{margin:0}.answer p+p{margin-top:8px}
-.fit{font-size:13px;color:var(--muted);margin:0 0 16px;max-width:65ch}.fit b{color:var(--fg)}
-.sec{max-width:65ch}.sec ul,.sec ol{margin:0;padding-left:20px}.sec table{border-collapse:collapse;width:100%;font-size:13.5px;margin:8px 0}.sec th,.sec td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}.sec th{background:var(--bg)}
-.safety{background:var(--warn-bg);border:1px solid var(--warn);border-radius:6px;padding:10px 14px;margin-top:8px}.safety p{margin:0}
-.faq details{border-top:1px solid var(--line);padding:8px 0}.faq summary{cursor:pointer;font-weight:600}.faq summary p{display:inline;margin:0}
-.meta{font-family:var(--mono);font-size:12px;color:var(--muted);border-top:1px solid var(--line);margin-top:24px;padding-top:12px;display:grid;gap:4px}
-aside .box{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
-aside .box h4{margin:0 0 8px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
-.partner{display:grid;gap:4px;padding:10px 0;border-top:1px solid var(--line)}.partner:first-of-type{border-top:0}.partner small{color:var(--muted)}
-.parts{display:grid;gap:6px;margin:8px 0;padding:0;list-style:none}.parts li{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}.parts small{color:var(--muted);white-space:nowrap}
-.box .sec-parts ul{margin:8px 0;padding-left:18px;font-size:13.5px}.box .sec-parts p{margin:6px 0;font-size:13.5px}
-.sellers{display:grid;gap:6px;margin-top:8px}.sellers a{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:7px 10px;color:inherit}.sellers a small{color:var(--muted)}
-.exp{display:flex;gap:10px;align-items:center}.ava{width:40px;height:40px;border-radius:50%;background:var(--tint);display:grid;place-items:center;font-weight:700;color:var(--accent);flex:none}
-.note{background:var(--tint);border-radius:6px;padding:10px 14px;font-size:13.5px;margin-top:14px;max-width:65ch}
-.form{display:grid;gap:10px;max-width:480px;margin-top:14px}.form label{display:grid;gap:4px;font-size:13px}.form input,.form textarea,.form select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--paper);color:var(--fg);font:inherit}
-.toast{display:none;background:var(--ok);color:#fff;border-radius:6px;padding:10px 14px;margin-top:12px;max-width:480px}.toast.on{display:block}
-.foot{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--muted)}
-.fab{position:fixed;right:16px;bottom:16px;z-index:6;background:var(--amber);color:#1a1200;border:0;border-radius:999px;padding:12px 18px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.2)}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--paper);border-left:1px solid var(--line);z-index:7;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s}
-.drawer.on{transform:none}
-.drawer header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.drawer header b{font-size:17px}.drawer header small{display:block;color:var(--muted);font-size:12px}.drawer header button{margin-left:auto;border:0;background:transparent;font-size:20px;color:var(--muted)}
-.msgs{flex:1;overflow:auto;padding:14px 16px;display:grid;gap:10px;align-content:start}
-.msg{max-width:92%;padding:10px 12px;border-radius:10px;font-size:14px}.msg.u{background:var(--tint);justify-self:end}.msg.a{background:var(--bg);border:1px solid var(--line)}
-.msg .src{display:block;margin-top:8px;font-family:var(--mono);font-size:11.5px}.msg .src a{display:block}
-.opts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.opts button{border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:999px;padding:3px 10px;font-size:12.5px}
-#faq-box .row{padding:7px 10px;font-size:13px}#faq-box .row .m{font-size:11px}
-.ask{display:flex;gap:8px;padding:6px 16px 10px;border-bottom:1px solid var(--line)}.ask input{flex:1;border:1px solid var(--line);border-radius:6px;padding:10px;background:var(--bg);color:var(--fg);font:inherit}.ask button{border:0;background:var(--accent);color:var(--accent-fg);border-radius:6px;padding:10px 12px;font-weight:600}
-.disc{font-size:11px;color:var(--muted);padding:0 16px 8px}
-.ask{flex-direction:column;align-items:flex-end}.qwrap{position:relative;width:100%}.qwrap textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:10px 44px 10px 10px;background:var(--bg);color:var(--fg);font:inherit;resize:vertical;min-height:90px}.ask .mic{position:absolute;right:6px;top:6px;border:0;background:transparent;color:inherit;font-size:20px;padding:2px 6px;border-radius:0}
-.drawer.inline{position:static;transform:none;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:14px;transition:none}.drawer.inline .msgs{max-height:none;overflow:visible}.drawer.inline #chat-x{display:none}
-.cam{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-top:8px;max-width:520px}.vf{position:relative;background:#111;border-radius:8px;padding:28px 16px 22px;text-align:center}.vf-hint{color:#ddd;font-size:12.5px;margin-bottom:12px}.odom{display:inline-flex;gap:3px;align-items:baseline;background:#0a0a0a;border:1px solid #333;border-radius:4px;padding:6px 10px;font-family:var(--mono);font-size:26px;color:#e8e2c8;letter-spacing:2px}.odom span{background:#1b1b1b;padding:0 4px;border-radius:2px}.odom small{color:#888;font-size:12px;margin-left:6px}.vf-frame{position:absolute;inset:14px 60px;border:2px dashed rgba(255,255,255,.55);border-radius:6px;pointer-events:none}.odom.scan span{color:#7cf29a}
-.banner{background:var(--amber-bg);border:1px dashed var(--amber);font-size:12px;padding:5px 12px;border-radius:6px;margin:12px 0 0}
-/* совместимость со страницами первой сборки (ситуации, узлы, о проекте) */
-.paper{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;margin:14px 0}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 4px}.chips a{display:inline-block;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);text-decoration:none;color:var(--fg);font-size:13px}.chips a:hover{border-color:var(--accent)}
-.open{color:var(--warn)}
-/* мобильный формат: одна колонка шириной телефона, на любом экране */
-.wrap{max-width:480px;padding:0 12px 24px}
-.top .wrap{padding:6px 12px;gap:8px}.logo{font-size:17px}
-.eyebrow{font-size:10px}#v-home .eyebrow{margin-top:10px!important}h1{font-size:20px;margin:6px 0 2px}h2{font-size:16px}.lead{font-size:12.5px;line-height:1.35;margin-bottom:2px}
-.carbox{display:grid;grid-template-columns:92px 28px 1fr 1fr;align-items:center;gap:5px;padding:6px 8px;margin:6px 0 0}
-.carbox .or{text-align:center;font-size:12px;padding:0}.carbox .btn,.carbox select,.carbox input{width:100%;padding:7px 8px;font-size:14px}
-.carbox[aria-label="Пробег"] input,.carbox[aria-label="VIN"] input{grid-column:3/5}.carbox[aria-label="VIN"] .or:last-child{grid-column:1/-1;text-align:left;font-size:11.5px;line-height:1.35;color:var(--muted)}
-.carbox[aria-label="Модель и год"]{grid-template-columns:1fr 1fr}.carbox[aria-label="Модель и год"] .or{grid-column:1/-1;text-align:left;font-size:11.5px;color:var(--muted)}
-.vin-odom{font-size:15px;letter-spacing:1px}.carbox[aria-label="Пробег"] .or:last-child,.carbox[aria-label="Напоминание о ТО"] .or{grid-column:1/-1;text-align:left;font-size:11.5px;line-height:1.35;color:var(--muted)}
-.carbox[aria-label="Напоминание о ТО"]{grid-template-columns:1fr auto}.carbox[aria-label="Напоминание о ТО"] input{grid-column:1}.carbox[aria-label="Напоминание о ТО"] .btn{grid-column:2;width:auto}
-.car{font-size:12px;margin:4px 0 0}
-.cam{max-width:none}
-.card{grid-template-columns:1fr;gap:16px}.answer{font-size:15px}
-.drawer{width:100%}.drawer.inline{margin-top:6px}.drawer header{padding:6px 10px}.drawer header b{font-size:14px}.drawer header small{font-size:10.5px}
-.msgs{padding:6px 10px;gap:5px}.msg{padding:6px 9px;font-size:12.5px;line-height:1.35}
-#faq-box .row{padding:5px 8px;font-size:12.5px}#faq-box .row .m{font-size:10.5px}#faq-box b{font-size:13px}
-.ask{padding:6px 10px;gap:5px}.qwrap textarea{min-height:52px;font-size:13.5px;padding:7px 38px 7px 8px}.ask>button{width:100%;padding:7px}
-.disc{font-size:10px;padding:0 10px 6px;line-height:1.3}
-.drawer header{padding:8px 10px 0;border-bottom:0;background:var(--bg);align-items:flex-end}
-.tabs{display:flex;gap:0;flex:1;align-items:flex-end;position:relative}
-.tab{position:relative;flex:0 1 auto;margin-right:-10px;padding:7px 22px 7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);background:var(--line);border:0;border-radius:8px 0 0 0;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 100%,0 100%);z-index:1}
-.tab.on{background:var(--paper);color:var(--fg);z-index:2}
-.drawer header #chat-x{align-self:center;margin-bottom:4px}
-#disc-ask,#disc-parts{background:var(--paper);padding-top:8px}
-.drawer .ask,.drawer .pane,.drawer .msgs{background:var(--paper)}
-.pane{display:grid;gap:8px;padding:8px 10px}.pane label{display:grid;gap:3px;font-size:12px;color:var(--muted)}.pane input,.pane textarea{border:1px solid var(--line);border-radius:6px;padding:7px 8px;background:var(--bg);color:var(--fg);font:inherit;font-size:13.5px}.pane .or{font-size:11px;color:var(--muted)}
-.row{padding:9px 12px;align-items:center}.row .t{flex:1 1 60%}
-.axes button{font-size:12.5px}
-.foot{font-size:11px;margin-top:16px;padding-top:8px}
+/* ---- Слой применений сайта поверх токенов (собственных токенов нет — DS-01, шаг 7) ---- */
+html{background:#15141A}
+body{min-height:100vh;display:flex;justify-content:center}
+.shell{width:100%;max-width:390px;min-height:100vh;background:var(--era-bg);display:flex;flex-direction:column}
+.site{padding:var(--era-step-4) var(--era-gutter);display:flex;flex-direction:column;gap:var(--era-step-4);flex:1}
+a{color:inherit}
+p{margin:0}
+h1,h2,h3,h4{margin:0;font-weight:var(--era-date-weight)}
+h1{font-size:var(--era-date-size);line-height:var(--era-date-lh);letter-spacing:var(--era-date-ls)}
+h2{font-size:20px;line-height:1.2}
+h3{font-size:var(--era-speech-size);line-height:1.3;font-weight:400;margin-top:var(--era-step-4)}
+ul,ol{margin:var(--era-step-1) 0 0;padding-left:20px}
+li{margin:4px 0}
+[hidden]{display:none!important}
+/* шапка */
+.top{display:flex;align-items:center;justify-content:space-between;gap:var(--era-step-2)}
+.brand{letter-spacing:0.3em;text-decoration:none}
+.brand .era{color:var(--era-accent)} /* отступление от D1 по указанию владельца (LOG 09.11.2026, 0.66) */
+.back{color:var(--era-muted);text-decoration:none;min-height:var(--era-tap);display:inline-flex;align-items:center}
+.overline-row{display:flex;align-items:center;justify-content:space-between;gap:var(--era-step-1);margin-top:calc(-1 * var(--era-step-2));position:relative;white-space:nowrap}
+.overline-row .t-overline{overflow:hidden;text-overflow:ellipsis}
+.city{display:inline-flex;align-items:center;color:var(--era-muted);min-height:var(--era-tap);padding-left:var(--era-step-1)}
+.city svg{width:var(--era-icon-sm);height:var(--era-icon-sm);stroke:currentColor;stroke-width:var(--era-icon-stroke);fill:none}
+.city-menu{position:absolute;right:0;top:100%;z-index:5;background:var(--era-surface-2);display:grid;min-width:180px}
+.city-menu button{display:block;width:100%;text-align:left;padding:0 var(--era-step-3);min-height:var(--era-tap);color:var(--era-text)}
+.city-menu button:hover{background:var(--era-surface)}
+.city-menu button.alt{border-top:1px solid var(--era-line);color:var(--era-muted)}
+.banner{color:var(--era-muted);border-left:var(--era-stripe) solid var(--era-line);padding-left:var(--era-step-3)}
+/* текст страниц */
+.crumbs{color:var(--era-muted)}
+.crumbs a{text-decoration:none}
+.lead{color:var(--era-muted)}
+.note{color:var(--era-muted)}
+.sec{display:flex;flex-direction:column;gap:var(--era-step-2)}
+.sec p{margin-top:var(--era-step-1)}
+.answer{border-left:var(--era-stripe) solid var(--era-accent);padding-left:calc(var(--era-step-3) + var(--era-step-1));margin-left:calc(-1 * var(--era-gutter));padding-left:calc(var(--era-gutter) - var(--era-stripe))}
+.answer p{margin:0}
+.fit{color:var(--era-muted)}
+.safety{background:var(--era-surface);padding:var(--era-step-3);border-left:var(--era-stripe) solid var(--era-accent)}
+.faq details{border-top:1px solid var(--era-line);padding:var(--era-step-2) 0}
+.faq summary{cursor:pointer;list-style:none;min-height:var(--era-tap);display:flex;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::before{content:"+";color:var(--era-muted);margin-right:var(--era-step-2)}
+.faq details[open] summary::before{content:"−"}
+.faq details p{margin-top:var(--era-step-1)}
+.meta{display:flex;flex-direction:column;gap:4px;color:var(--era-muted);border-top:1px solid var(--era-line);padding-top:var(--era-step-3)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;vertical-align:top;padding:var(--era-step-2) 0;border-bottom:1px solid var(--era-line)}
+th{color:var(--era-muted);font-weight:400;padding-right:var(--era-step-2);width:38%}
+code{font-family:ui-monospace,monospace;font-size:0.9em;color:var(--era-muted)}
+.open{color:var(--era-muted)}
+/* списки карточек */
+.list{display:flex;flex-direction:column}
+.row{display:flex;flex-direction:column;gap:4px;padding:var(--era-step-3) 0;border-bottom:1px solid var(--era-line);text-decoration:none;color:inherit}
+.row .t{font-size:var(--era-input-size);line-height:var(--era-input-lh)}
+.row .tags{display:flex;gap:var(--era-step-2);flex-wrap:wrap;color:var(--era-muted)}
+.pill{color:var(--era-muted)}
+.pill.ok{color:var(--era-text)}
+/* оси и чипы */
+.axes{display:flex;flex-wrap:wrap;gap:var(--era-step-1);align-items:center}
+.axes .t-overline{width:100%}
+.axes button,.chips a{min-height:var(--era-tap);padding:0 var(--era-step-3);display:inline-flex;align-items:center;border:1px solid var(--era-line);color:var(--era-muted);text-decoration:none}
+.axes button.on{background:var(--era-surface-2);border-color:transparent;border-bottom:var(--era-stripe-h) solid var(--era-accent);color:var(--era-text)}
+.chips{display:flex;flex-wrap:wrap;gap:var(--era-step-1)}
+/* формы и кнопки */
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:var(--era-step-1)}
+.field select{width:100%;background:none;border:0;outline:none;color:var(--era-text);appearance:none;-webkit-appearance:none;font:inherit}
+.field select.empty{color:var(--era-muted)}
+.field.sel{position:relative}
+.field.sel::after{content:"";position:absolute;right:var(--era-step-3);top:50%;width:7px;height:7px;border-right:1.5px solid var(--era-muted);border-bottom:1.5px solid var(--era-muted);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+.duo{display:grid;grid-template-columns:1fr var(--era-control);gap:var(--era-step-1)}
+.composer{display:grid;grid-template-columns:1fr var(--era-control) var(--era-control);gap:var(--era-step-1)}
+.btn-primary{display:flex;align-items:center;justify-content:center;height:var(--era-control);width:100%;background:var(--era-surface-2);border-bottom:var(--era-stripe-h) solid var(--era-accent);color:var(--era-text);text-decoration:none}
+.hint{margin-top:calc(-1 * var(--era-step-2))}
+.push{border-left:var(--era-stripe) solid var(--era-accent)}
+/* диалог */
+.dialog{display:flex;flex-direction:column;gap:var(--era-step-3);margin-left:calc(-1 * var(--era-gutter));min-height:120px}
+.speech .who{display:block;margin-bottom:2px}
+.speech.is-prompt{color:var(--era-muted)}
+.user{margin-left:var(--era-gutter);background:var(--era-surface-2);border-left:var(--era-stripe) solid var(--era-accent);padding:var(--era-step-2) var(--era-step-3);align-self:flex-end;max-width:85%}
+.faqlist{margin-left:var(--era-gutter)}
+.faqlist .row{padding:var(--era-step-2) 0}
+.dialog .replies{margin-left:var(--era-gutter);margin-top:0}
+/* две точки перехода */
+.links{display:grid;grid-template-columns:1fr 1fr;gap:var(--era-step-1)}
+.link{display:flex;flex-direction:column;gap:var(--era-step-1);background:var(--era-surface);padding:var(--era-step-3);border-bottom:var(--era-stripe-h) solid var(--era-line)}
+.link.is-primary{border-bottom-color:var(--era-accent)}
+.link .qr{width:124px;height:124px;background:#fff;padding:4px;align-self:center} /* белое поле — требование сканера (LOG 09.11.2026, 0.58) */
+.link .qr svg{width:100%;height:100%;display:block}
+.link .cap{display:block}
+.menu{display:grid;margin-top:var(--era-step-1)}
+.menu a{display:block;min-height:var(--era-tap);line-height:var(--era-tap);text-decoration:none;color:var(--era-text);border-top:1px solid var(--era-line)}
+@media (hover:none) and (pointer:coarse){.link .qr{display:none}}
+/* эксперт */
+.exp{display:flex;gap:var(--era-step-3);align-items:center}
+.ava{width:52px;height:52px;flex:none;display:grid;place-items:center;background:var(--era-surface-2);border-bottom:var(--era-stripe-h) solid var(--era-accent)}
+.foot{color:var(--era-muted);border-top:1px solid var(--era-line);padding-top:var(--era-step-3);margin-top:auto}
+.foot a{text-decoration:none;color:var(--era-text)}
     </style>
-  <script is:inline set:html={`window.B=${JSON.stringify(B)};`}></script>
+    <script is:inline set:html={`window.B=${JSON.stringify(B)};window.EXPERT=${JSON.stringify(SITE.expert.name)};`}></script>
   </head>
-  <body data-page={page} data-expert={SITE.expert.name}>
-    <div class="top"><div class="wrap">
-      <a class="logo" href={B + "/"}>ЭРА-<b>Вольвоман</b></a>
-      <div class="right">
-        <label class="region">Город <select id="city" onchange="setCity(this.value)">{SITE.cities.map((c) => <option>{c}</option>)}</select></label>
-        <button class="btn ghost" id="back" onclick="goBack()" hidden={page === 'home'}>← Назад</button>
+  <body data-page={page}>
+    <div class="shell"><div class="site">
+      <div class="top">
+        <a class="brand t-label" href={B + "/"}><span class="era">{SITE.brandMark}</span>{SITE.brandRest}</a>
+        {page !== 'home' && <a class="back t-meta" href={B + "/"}>← Главная</a>}
       </div>
-    </div></div>
-
-    <div class="wrap">
-      {SITE.mode === 'closed' && (
-        <p class="banner">Закрытый тест: {n} карточек в статусе «требует подтверждения экспертом». Страницы не индексируются.</p>
-      )}
+      {SITE.mode === 'closed' && <p class="banner t-meta">Закрытый тест: {n} карточек, статус «требует подтверждения экспертом». Страницы не индексируются.</p>}
       <slot />
-      <p class="foot">Сайт «{SITE.name}» — узел холдинга ЭРА (эксплуатация и ремонт автомобиля); не является официальным ресурсом Volvo Cars. Материалы носят информационный характер и не заменяют диагностику у специалиста; решение о ремонте принимает владелец автомобиля. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в конкретном ответе. · Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''} · <a href={B + "/about/"}>О проекте</a> · <a href={B + "/pd/"}>Политика ПД</a> · <span title="В сборке">Оферта — в сборке</span> · <a href={B + "/llms.txt"}>llms.txt</a></p>
-    </div>
-
-    <!-- ИИ-механик: на главной встраивается в #chat-home, на остальных страницах — выдвижная панель -->
-    <button class="fab" onclick="openChat()" hidden={page === 'home'}>Спросить ИИ-механика · Подобрать запчасть</button>
-    <div class="drawer" id="drawer" aria-label="ИИ-механик">
-      <header><div class="tabs"><button class="tab on" id="tab-ask" onclick="setTab('ask')">Спросить ИИ-механика</button><button class="tab" id="tab-parts" onclick="setTab('parts')">Подобрать запчасть по VIN</button></div><button id="chat-x" onclick="closeChat()" aria-label="Закрыть">×</button></header>
-      <div class="disc" id="disc-ask">Ответственность за достоверность информации несут оператор сайта и эксперт, указанный в ответе. Если проблема не описана в картотеке, будет сделан прямой информационный запрос соответствующему эксперту.</div>
-      <div class="ask"><div class="qwrap"><textarea id="q" rows="4" placeholder="Задайте вопрос, опишите проблему или запчасти, которые нужно подобрать"></textarea><button class="mic" onclick="voice()" title="Надиктовать" aria-label="Надиктовать">🎤</button></div><button onclick="ask()">Отправить</button></div>
-      <div class="disc" id="disc-parts" hidden>Подбор по VIN: оригинал и аналоги, наличие, срок, доставка по России. Если запчасти нет в нашей базе, заявка передаётся проверенному эксперту; ответ — до 2 рабочих часов.</div>
-      <div class="pane" id="pane-parts" hidden>
-        <label>VIN<input id="p-vin" placeholder="17 знаков — подставится с главной" maxlength="17"></label>
-        <label>Что нужно<textarea id="p-what" rows="3" placeholder="Запчасти или узел: например, стойки стабилизатора передние, пара; масло и фильтры на ТО"></textarea></label>
-        <label>Телефон или Telegram<input id="p-contact" placeholder="+7 9.. или @имя"></label>
-        <button class="btn" onclick="sendParts()">Отправить поставщику-партнёру</button>
-        <a class="btn ghost" href={B + "/podbor/"} id="p-catalog">Подобрать по каталогу самому</a>
-        <small class="or">Нажимая «Отправить», Вы соглашаетесь с обработкой персональных данных ООО «ЭРА» по <a href={B + "/pd/"}>Политике ПД</a></small>
-        <div class="toast" id="p-ok">Заявка ушла поставщику-партнёру. Ответ — до 2 часов в рабочее время. Переход учтён в статистике.</div>
-      </div>
-      <div class="msgs" id="msgs">
-        <div class="msg a" id="faq-box" hidden><b id="faq-h">Наиболее частые вопросы за последний месяц</b><div class="list" id="faq-list" style="margin-top:8px;gap:6px">
-          <a class="row" href={B + "/to/"}><span class="t">Ближайшее ТО: что менять по пробегу и году выпуска</span></a>
-          <a class="row" href={B + "/cons/"}><span class="t">Расходники для эксплуатации: масло, фильтры, дворники, лампы, жидкости</span></a>
-          {faq.map((f) => <a class="row" data-m={f.m} href={f.url}><span class="t">{f.title}</span></a>)}
-        </div></div>
-      </div>
-      <div class="disc">Ответственность за достоверность информации несут оператор сайта и эксперт, указанный в ответе. Мы не несём ответственность за безопасность эксплуатации Вашего автомобиля.</div>
-    </div>
-    <script is:inline set:html={`window.DEMO_PARTNERS=${JSON.stringify(SITE.demo ? SITE.demoPartners : [])};window.SUPPLIER_URL=${JSON.stringify(SITE.partnerSupplierUrl || (SITE.demo ? 'https://www.avito.ru/' : ''))};window.EXPERT_BOX=${JSON.stringify(`<div class="box"><h4>Эксперт картотеки</h4><div class="exp"><div class="ava">${SITE.expert.initials}</div><div><b>${SITE.expert.name}</b><br><small style="color:var(--muted)">${SITE.expert.line}</small><br><a href="${SITE.expert.url}">Профиль и услуги</a></div></div></div>`)};`} />
-    <script is:inline src={B + "/catalog/vin.js"}></script>
+      <p class="foot t-meta">«{SITE.name}» — сайт холдинга ЭРА об эксплуатации и ремонте {SITE.make}; не является официальным ресурсом Volvo Cars. Материалы информационные и не заменяют диагностику у специалиста; решение о ремонте принимает владелец. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в ответе. Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''}. <a href={B + "/about/"}>О проекте</a> · <a href={B + "/pd/"}>Политика ПД</a> · <a href={B + "/llms.txt"}>llms.txt</a></p>
+    </div></div>
     <script is:inline src={B + "/js/site.js"}></script>
   </body>
 </html>

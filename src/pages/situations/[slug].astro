@@ -12,9 +12,9 @@ const { axis } = Astro.props;
 const cards = loadCards().filter((c) => c.situationAxis.slug === axis.slug);
 ---
 <Base title={`Ситуация: ${axis.title} — ${SITE.name}`} crumbs={[{ title: 'Ситуация' }, { title: axis.title }]}>
-  <section class="paper">
-    <p class="crumbs"><a href={B + "/"}>Главная</a> › Ситуация › {axis.title}</p>
-    <h1>{axis.title}: карточки по Volvo</h1>
+  <section style="display:flex;flex-direction:column;gap:var(--era-step-3)">
+    <p class="crumbs t-meta"><a href={B + "/"}>Главная</a> › Ситуация › {axis.title}</p>
+    <h1 class="t-date">{axis.title}: карточки по Volvo</h1>
     <CardList cards={cards} showModels={true} />
   </section>
 </Base>
