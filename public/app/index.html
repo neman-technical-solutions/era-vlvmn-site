@@ -243,7 +243,7 @@ function onbAnswer(){var v=$('onb-in').value.trim();if(!v)return false;$('onb-in
  if(onbStep===0){var o=parseInt(v.replace(/\D/g,''),10);if(!o){say('onb-dialog','Нужно число — пробег в километрах.');return false}km=o;onbStep=1;$('onb-form').hidden=true;
   say('onb-dialog','Записал '+fmt(o)+' км. Как чаще ездите?');replies('onb-dialog',[['Город',function(){onbMode('город')}],['Трасса',function(){onbMode('трасса')}],['Смешанно',function(){onbMode('смешанно')}]]);return false}
  return false}
-function onbMode(m){user('onb-dialog',m[0].toUpperCase()+m.slice(1));say('onb-dialog','Учту режим «'+m+'» в регламенте. Открываю карточку автомобиля — общий справочник по модели доступен сразу, а информационный пакет именно по вашему автомобилю соберу чуть позже.',true);setTimeout(function(){go('s-d1')},1600)}
+function onbMode(m){user('onb-dialog',m[0].toUpperCase()+m.slice(1));say('onb-dialog','Записал. Пробег '+fmt(km)+' км, режим «'+m+'». Справочник по модели доступен сразу, пакет по вашему автомобилю соберу позже. Что дальше?',true);replies('onb-dialog',[['Открыть карточку',function(){user('onb-dialog','Открыть карточку');go('s-d1')}],['Подключить функции',function(){user('onb-dialog','Подключить функции');go('s-fn')}]])}
 /* S1 */
 var d1Started=false;
 function d1Start(){if(!window._d1sw){window._d1sw=1;swapBtn('km',$('km-cam'),'Сфотографировать одометр',function(){setKm()},function(){$('km').value='112 300';setKm()},function(v){var o=parseInt((v||'').replace(/\D/g,''),10);return !!o&&o!==km});swapBtn('q',$('q-cam'),'Сфотографировать чек или документ',function(){askD1()},function(){photoD1()})}$('d1-date').textContent=dateNow();$('d1-km').textContent=km?fmt(km)+' км':'— км';if(km)$('km').value=fmt(km);if(d1Started)return;d1Started=true;firstDialog()}
