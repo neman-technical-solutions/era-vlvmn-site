@@ -167,7 +167,7 @@ a{color:inherit;text-decoration:none}
     <div class="step"><span class="dot"></span><span>Выполнение · до 14-11-26 13:00</span></div>
     <div class="step"><span class="dot"></span><span>Закрытие с двух сторон · оплата у партнёра</span></div>
   </div>
-  <div class="input-row" style="grid-template-columns:1fr var(--era-control)" aria-label="Вложения"><label class="field t-input"><input id="ev-note" type="text" placeholder="Заметка к обращению" autocomplete="off"></label><button class="btn-square" type="button" aria-label="Добавить фото или документ" onclick="attachEv()"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button></div>
+  <div class="input-row" style="grid-template-columns:1fr var(--era-control) var(--era-control)" aria-label="Вложения"><label class="field t-input"><input id="ev-note" type="text" placeholder="Заметка к обращению" autocomplete="off"></label><button class="btn-square" type="button" aria-label="Сказать голосом" onclick="document.getElementById('ev-note').value='Стук при повороте руля, слева спереди';document.getElementById('ev-note').dispatchEvent(new Event('input'))"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><button class="btn-square" type="button" aria-label="Добавить фото или документ" onclick="attachEv()"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button></div>
   <p class="t-meta muted" id="ev-att">Вложений нет. Фото и документы уходят исполнителю только внутри этого наряда.</p>
   <p class="t-meta muted">Исполнитель: ХАБ Гродно · мастер назначается после приёма (грейд виден в наряде).</p>
 </div></section>
