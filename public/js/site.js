@@ -81,18 +81,6 @@ function reply(t) {
   if (c) { var a = el('<article class="speech t-speech"><span class="who t-label">ИИ-механик</span><p></p></article>'); a.querySelector('p').textContent = c.short; a.querySelector('p').insertAdjacentHTML('beforeend', src(c.url, c.code + ' ' + c.title)); dlg.appendChild(a); return; }
   say('<b>В картотеке такая проблема не описана.</b> Тема уйдёт в план публикаций. Спросить эксперта напрямую — контакты ниже.');
 }
-function toControl() {
-  var h = $('to-hint'), o = parseInt(($('odo').value || '').replace(/\D/g, ''), 10), t = ($('tel').value || '').replace(/\D/g, '');
-  if (!car) { h.innerHTML = '<b>Выберите модель и год</b> — без них интервал ТО не определить.'; return false; }
-  if (!o) { h.innerHTML = '<b>Укажите пробег</b> под моделью и годом — по нему считаем срок ТО.'; return false; }
-  if (t.length < 10) { h.innerHTML = '<b>Укажите телефон</b> — по нему придёт напоминание.'; return false; }
-  odo = o; S.odo = o; var next = nextTO(o);
-  $('to-ok-text').textContent = 'Volvo ' + car.m + ', ' + car.y + ', ' + fmt(o) + ' км — на контроле ТО. Напомним за 1 500 км до ТО на ' + fmt(next) + ' км.';
-  $('to-ok').hidden = false;
-  h.textContent = window.DEMO ? 'Демонстрация: данные остаются в вашем браузере.' : 'Напоминание включено.';
-  S.to = { car: car, odo: o, ts: Date.now() }; save(); /* телефон не сохраняется и не передаётся */
-  return false;
-}
 if (page === 'home') {
   if ($('q')) $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } });
   if (car) { $('m').value = car.m; $('y').value = car.y; }

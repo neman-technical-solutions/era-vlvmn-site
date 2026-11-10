@@ -1,0 +1,7 @@
+---
+// Кнопка перехода в бот (SPC-02, разд. 2.4, п. 1). tag — метка страницы: home, about либо код карточки (VM-0104);
+// бот ставит её в заявку строкой «Пришёл со страницы».
+import { SITE } from '../../site.config.mjs';
+const { tag = 'home', label = SITE.bot.label } = Astro.props;
+---
+<a class="btn-primary t-button" style="text-align:center;text-decoration:none" href={`${SITE.bot.url}?start=${tag}`} target="_blank" rel="noopener">{label}</a>

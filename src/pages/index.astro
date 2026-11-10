@@ -1,8 +1,9 @@
 ---
 // Первый экран (ERA-VLVMN-MKT-03 0.9, LOG 09.11.2026 ERA-VLVMN-09): наименование, надзаголовок с городом,
-// «Механик и контроль ТО» — модель, год, пробег; диалог с ИИ-механиком; две точки перехода; телефон и кнопка контроля ТО (демонстрация).
+// «Механик и контроль ТО» — модель, год, пробег; диалог с ИИ-механиком; кнопка в бот и две точки перехода; форма контроля ТО снята 10.11.2026 — контроль ведёт бот (ERA-VLVMN-18).
 import Base from '../layouts/Base.astro';
 import Links from '../components/Links.astro';
+import BotButton from '../components/BotButton.astro';
 import { loadCards } from '../lib/cards';
 import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
@@ -35,7 +36,7 @@ const mic = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx
   </div>
 
   <section class="dialog" id="dialog" aria-label="Диалог с ИИ-механиком">
-    <article class="speech is-prompt t-speech"><span class="who t-label">ИИ-механик</span><p>Выберите модель и год — покажу, что чаще всего спрашивают о вашем {SITE.make}. Укажите пробег — отвечу на вопросы по ближайшему ТО. Укажите телефон ниже — поставлю вашу машину на автоматическое напоминание о ТО по пробегу.</p></article>
+    <article class="speech is-prompt t-speech"><span class="who t-label">ИИ-механик</span><p>Выберите модель и год — покажу, что чаще всего спрашивают о вашем {SITE.make}. Укажите пробег — отвечу на вопросы по ближайшему ТО. Напоминание о ТО по пробегу — в боте в Telegram.</p></article>
   </section>
   <form class="composer" onsubmit="return ask()">
     <label class="field t-input"><input id="q" type="text" placeholder="Опишите проблему или задайте вопрос" aria-label="Вопрос ИИ-механику" autocomplete="off"></label>
@@ -44,17 +45,10 @@ const mic = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx
   </form>
   <p class="t-meta hint">ИИ-механик может ошибаться.</p>
 
-  <Links />
+  <BotButton tag="home" />
+  <p class="t-meta">В боте — цена и наличие деталей у продавца и контроль ТО: кнопка «Мой автомобиль» хранит пробег и напоминает о сроке.</p>
 
-  <form onsubmit="return toControl()" aria-label="Контроль ТО" style="display:grid;gap:var(--era-step-1)">
-    <div class="duo">
-      <label class="field t-input"><input id="tel" type="tel" inputmode="tel" placeholder="Телефон" aria-label="Телефон"></label>
-      <button class="btn-square" type="button" aria-label="Надиктовать телефон" onclick="voice('tel')" set:html={mic} />
-    </div>
-    <button class="btn-primary t-button" type="submit">Поставить на контроль ТО</button>
-    <p class="t-meta" id="to-hint">Контроль ТО бесплатный, см. <a href={B + "/pd/"}>Политику ПД</a>.{SITE.demo && <> Демонстрация: данные остаются в вашем браузере.</>}</p>
-    <div class="push" id="to-ok" hidden><div class="t-label" style="color:var(--era-muted)">Контроль ТО</div><div class="t-meta" id="to-ok-text" style="margin-top:4px;color:var(--era-text)"></div></div>
-  </form>
+  <Links />
 
   <section>
     <h2 class="t-label" style="color:var(--era-muted)">Картотека по моделям</h2>
