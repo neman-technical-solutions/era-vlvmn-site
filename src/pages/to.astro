@@ -1,9 +1,13 @@
 ---
-// Карточка из данных «Ближайшее ТО» (VM-0040): считается в браузере по машине и пробегу с главной.
+// ТО: перечень карточек ТО по платформам. До 11.11.2026 страница считалась в браузере шаблоном VM-0040 с числами [О] — снято.
 import Base from '../layouts/Base.astro';
+import ToCards from '../components/ToCards.astro';
 import { SITE } from '../../site.config.mjs';
-const B = SITE.base;
 ---
-<Base page="to" title={`Ближайшее ТО Volvo: что менять по пробегу и году — ${SITE.name}`} description="Ближайшее ТО Volvo по пробегу и году выпуска: регламент 15 000 км / 12 месяцев, состав работ на 30, 60, 90 и 180 тыс. км." crumbs={[{ title: 'Ближайшее ТО' }]}>
-  <div id="gen" style="display:flex;flex-direction:column;gap:var(--era-step-3)"><p class="note t-meta">Карточка считается по вашему автомобилю — укажите модель, год и пробег <a href={B + "/"}>на главной</a>.</p></div>
+<Base page="to" title={`ТО ${SITE.make}: что делают по пробегу и какое масло — ${SITE.name}`} description={`ТО ${SITE.make} по платформам: перечень работ по пробегу и моторное масло по двигателям — по документам Volvo Cars, с источником у каждого числа.`} crumbs={[{ title: 'ТО' }]}>
+  <article style="display:flex;flex-direction:column;gap:var(--era-step-3)">
+    <h1 class="t-date">ТО {SITE.make}: что делают по пробегу и какое масло</h1>
+    <div class="answer t-speech"><p>Перечень работ и допуск масла зависят от платформы, двигателя, года выпуска и рынка. Здесь только то, что подтверждено документами Volvo Cars; для моделей без карточки чисел не приводим.</p></div>
+    <div class="sec"><ToCards /></div>
+  </article>
 </Base>

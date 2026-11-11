@@ -1,0 +1,15 @@
+---
+// Карточки ТО по платформам (решение 10.11.2026): только документы Volvo Cars; признак карточки ТО — слово «регламент» в keywords.
+// Для моделей без карточки чисел нет (LOG 11.11.2026, ERA-VLVMN-18).
+import BotButton from './BotButton.astro';
+import { loadCards } from '../lib/cards';
+const cards = loadCards().filter((c) => c.keywords.includes('регламент'));
+---
+<h3>Карточки ТО</h3>
+{cards.length ? (
+  <ul>{cards.map((c) => <li><a href={c.url}>{c.title}</a></li>)}</ul>
+) : (
+  <p class="note t-meta">Карточки ТО готовятся.</p>
+)}
+<p class="note t-meta">Вашей модели нет в списке — интервал ТО смотрите в сервисной книжке, допуск и объём масла — в руководстве владельца своего года выпуска. Вопрос можно задать ИИ-механику: он передаст его эксперту.</p>
+<BotButton tag="home" />
