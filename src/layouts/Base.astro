@@ -146,7 +146,7 @@ code{font-family:ui-monospace,monospace;font-size:0.9em;color:var(--era-muted)}
       </div>
       {SITE.mode === 'closed' && <p class="banner t-meta">Закрытый тест: {n} карточек, статус «требует подтверждения экспертом». Страницы не индексируются.</p>}
       <slot />
-      <p class="foot t-meta">«{SITE.name}» — сайт холдинга ЭРА об эксплуатации и ремонте {SITE.make}; не является официальным ресурсом Volvo Cars. Материалы информационные и не заменяют диагностику у специалиста; решение о ремонте принимает владелец. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в ответе. Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''}. <a href={B + "/about/"}>О проекте</a> · <a href={B + "/pd/"}>Политика ПД</a> · <a href={B + "/llms.txt"}>llms.txt</a></p>
+      <p class="foot t-meta">«{SITE.name}» — сайт холдинга ЭРА об эксплуатации и ремонте {SITE.make}; не является официальным ресурсом Volvo Cars. Материалы информационные и не заменяют диагностику у специалиста; решение о ремонте принимает владелец. Ответственность за рекомендации несут оператор сайта и эксперт, указанный в ответе. Оператор: {SITE.operator.legalName || SITE.operator.name}{SITE.operator.inn ? `, ИНН ${SITE.operator.inn}` : ''}. <a href={B + "/about/"}>О проекте</a> · <a href={B + "/pd/"}>Политика ПД</a> · <a href={`${SITE.bot.url}?start=feedback_${page || 'site'}`} target="_blank" rel="noopener">Предложить доработку</a> · <a href={B + "/llms.txt"}>llms.txt</a></p>
     </div></div>
     <script is:inline src={B + "/js/site.js"}></script>
   </body>
