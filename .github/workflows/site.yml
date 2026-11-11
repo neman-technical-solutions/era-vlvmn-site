@@ -37,10 +37,8 @@ jobs:
       - run: npm run build
         env:
           CARDS_DIR: content/05-content/cards
-          # Временно, пока NS era-volvoman.ru не переведены на reg.ru (ERA-VLVMN-07):
-          # сайт публикуется на github.io под подпутём. Снять обе строки и вернуть public/CNAME при переходе на домен.
-          SITE_URL: https://neman-technical-solutions.github.io
-          SITE_BASE: /era-vlvmn-site
+          # Адрес сайта — era-volvoman.ru (site.config.mjs, public/CNAME; ERA-VLVMN-19).
+          # Для показа на github.io под подпутём — задать SITE_URL и SITE_BASE и убрать public/CNAME.
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
