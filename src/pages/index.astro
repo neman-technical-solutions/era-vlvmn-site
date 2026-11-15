@@ -1,6 +1,7 @@
 ---
 // Первый экран (ERA-VLVMN-MKT-03 0.9, LOG 09.11.2026 ERA-VLVMN-09): наименование, надзаголовок с городом,
-// «Механик и контроль ТО» — модель, год, пробег; диалог с ИИ-механиком; кнопка в бот и две точки перехода; форма контроля ТО снята 10.11.2026 — контроль ведёт бот (ERA-VLVMN-18).
+// «Механик и контроль ТО» — модель, год, пробег и двигатель; диалог с ИИ-механиком; кнопка в бот и две точки перехода; форма контроля ТО снята 10.11.2026 — контроль ведёт бот (ERA-VLVMN-18).
+// 15.11.2026 (ERA-VLVMN-30): кнопки микрофона сняты; двигатель — список в одной строке с пробегом; ссылка в бот несёт модель, год и двигатель (start=home_<м>_<г>_<дв>).
 import Base from '../layouts/Base.astro';
 import Links from '../components/Links.astro';
 import BotButton from '../components/BotButton.astro';
@@ -12,7 +13,6 @@ const cards = loadCards();
 const index = cards.map((c) => ({ code: c.code, title: c.title, url: c.url, models: c.modelKeys.map((k) => k.model), general: c.platform === 'все', keywords: c.keywords, short: c.short }));
 const years: number[] = []; for (let y = SITE.years.to; y >= SITE.years.from; y--) years.push(y);
 const website = { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: `${SITE.url}${B}/`, inLanguage: 'ru', publisher: { '@id': `${SITE.url}${B}/#operator` } };
-const mic = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 ---
 <Base page="home" title={`Эксплуатация и ремонт ${SITE.make}: ИИ-механик, контроль ТО, карточки по моделям — ${SITE.name}`} description={`ИИ-механик по ${SITE.make}: частые неисправности XC90, XC60, XC70 по данным техосмотра, ближайшее ТО по пробегу, запчасти и расходники. Карточки с источниками, эксперт — ${SITE.expert.name}.`} jsonld={[website]}>
   <div class="overline-row">
@@ -30,17 +30,16 @@ const mic = '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx
     <label class="field sel t-input"><select id="m" class="empty" onchange="carChanged()" aria-label="Модель"><option value="">Модель</option>{SITE.models.map((m) => <option>{m}</option>)}</select></label>
     <label class="field sel t-input"><select id="y" class="empty" onchange="carChanged()" aria-label="Год выпуска"><option value="">Год</option>{years.map((y) => <option>{y}</option>)}</select></label>
   </div>
-  <div class="duo" style="margin-top:calc(-1 * var(--era-step-2))">
+  <div class="pick" style="margin-top:calc(-1 * var(--era-step-2))">
     <label class="field t-input"><input id="odo" inputmode="numeric" placeholder="Пробег, км" aria-label="Пробег" oninput="odoTyped()"></label>
-    <button class="btn-square" type="button" aria-label="Надиктовать пробег" onclick="voice('odo')" set:html={mic} />
+    <label class="field sel t-input"><select id="e" class="empty" onchange="engineChanged()" aria-label="Двигатель"><option value="">Двигатель</option>{SITE.engines.map((e) => <option value={e.v}>{e.t}</option>)}</select></label>
   </div>
 
   <section class="dialog" id="dialog" aria-label="Диалог с ИИ-механиком">
     <article class="speech is-prompt t-speech"><span class="who t-label">ИИ-механик</span><p>Выберите модель и год — покажу, что чаще всего спрашивают о вашем {SITE.make}. Укажите пробег — отвечу на вопросы по ближайшему ТО. Напоминание о ТО по пробегу — в боте в Telegram.</p></article>
   </section>
-  <form class="composer" onsubmit="return ask()">
+  <form class="composer is-two" onsubmit="return ask()">
     <label class="field t-input"><input id="q" type="text" placeholder="Опишите проблему или задайте вопрос" aria-label="Вопрос ИИ-механику" autocomplete="off"></label>
-    <button class="btn-square" type="button" aria-label="Сказать голосом" onclick="voice('q')" set:html={mic} />
     <button class="btn-square is-primary" type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
   </form>
   <p class="t-meta hint">ИИ-механик может ошибаться.</p>

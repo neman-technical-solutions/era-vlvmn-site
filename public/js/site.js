@@ -27,6 +27,11 @@ function say(html, prompt) { if (!dlg) return; dlg.appendChild(el('<article clas
 function user(t) { dlg.appendChild(el('<div class="user t-speech"></div>')); dlg.lastChild.textContent = t; }
 function setSel(id) { var s = $(id); if (s) s.classList.toggle('empty', !s.value); }
 function odoTyped() { var o = parseInt(($('odo').value || '').replace(/\D/g, ''), 10); odo = o || null; S.odo = odo; save(); }
+/* Двигатель и ссылка в бот: start=home_<модель>_<год>_<двигатель>, только [A-Za-z0-9_-], до 64 знаков (ограничение Telegram) */
+function engineChanged() { setSel('e'); S.eng = $('e').value || null; save(); botLink(); }
+function botLink() { var a = $('botlink-home'); if (!a) return; var tag = 'home', m = $('m') && $('m').value, y = $('y') && $('y').value, e = $('e') && $('e').value;
+  if (m && y) { tag += '_' + m + '_' + y + (e ? '_' + e : ''); }
+  tag = tag.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64); a.href = a.href.replace(/\?start=.*$/, '') + '?start=' + tag; }
 var CARDS = window.CARDS || [];
 function cardsFor(m) { return CARDS.filter(function (c) { return c.general || c.models.indexOf(m) >= 0; }); }
 function findCard(t, m) {
@@ -43,7 +48,7 @@ function findCard(t, m) {
 function carChanged() {
   setSel('m'); setSel('y');
   var m = $('m').value, y = $('y').value; if (!(m && y)) return;
-  car = { m: m, y: y }; S.car = car; save();
+  car = { m: m, y: y }; S.car = car; save(); botLink();
   dlg.innerHTML = '';
   var nx = odo ? nextTO(odo) : null;
   say('Volvo ' + m + ', ' + y + (odo ? ', пробег ' + fmt(odo) + ' км — ближайшее ТО около ' + fmt(nx) + ' км' : '') + '. Чаще всего по ' + m + ' спрашивают:', true);
@@ -85,7 +90,8 @@ if (page === 'home') {
   if ($('q')) $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); ask(); } });
   if (car) { $('m').value = car.m; $('y').value = car.y; }
   if (odo) $('odo').value = fmt(odo);
-  if (car) carChanged();
+  if (S.eng && $('e')) { $('e').value = S.eng; setSel('e'); }
+  if (car) carChanged(); else botLink();
 }
 
 /* ---------- Раздел модели: фильтры по осям ---------- */
