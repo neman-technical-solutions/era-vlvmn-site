@@ -111,3 +111,11 @@ if (page === 'model') {
 }
 
 /* Страницы /to/ и /cons/ с 11.11.2026 статические (to.astro, cons.astro): шаблон VM-0040/0041 с числами [О] снят (LOG ERA-VLVMN-18). */
+
+/* Событие счётчика Авито Рекламы (17.11.2026, ERA-VLVMN-35): переход в бот — все ссылки на t.me/VolvomenBot
+   и на Telegram эксперта; имя события tg_click, в кабинете — «Переход в Telegram». Счётчика нет — тишина. */
+document.addEventListener('click', function (ev) {
+  var a = ev.target && ev.target.closest && ev.target.closest('a[href^="https://t.me/"]');
+  if (!a || !window._apxl || typeof window._apxl.sendEvent !== 'function') return;
+  window._apxl.sendEvent({ type: 'reachGoal', id: 7897331, goalName: 'tg_click' });   // событие ID 3785669 «Переход в Telegram»
+});
