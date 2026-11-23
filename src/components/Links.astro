@@ -23,9 +23,7 @@ const bot = `${SITE.bot.url}?start=home`;
 </span>
     <span class="cap t-label">{e.alias}</span><span class="cap t-meta">{e.line}</span>
     <div class="menu">
-      {e.max
-        ? <a class="t-input" href={e.max} target="_blank" rel="noopener">Написать в MAX</a>
-        : <span class="t-input" title="В MAX контакт находят по номеру">Написать в MAX · {e.phoneHuman}</span>}
+      <a class="t-input" href={e.max || undefined} target={e.max ? '_blank' : undefined} rel="noopener">Написать в MAX</a>
     </div>
   </div>
 </div>
