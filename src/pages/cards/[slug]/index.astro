@@ -59,7 +59,7 @@ function fmt(d: string) { const [y, m, dd] = d.split('-'); return `${dd}.${m}.${
     <div class="meta t-meta">
       <span>Опубликовано: {fmt(card.published)}{card.modified !== card.published && <> · изменено: {fmt(card.modified)}</>} · пересмотр до: {fmt(card.review_by)}{card.changelog && <> · {card.changelog}</>}</span>
       <span>Автор: {card.author} · {card.reviewer ? `Подтвердил: ${card.reviewer}` : `Эксперт картотеки: ${SITE.expert.name}`}</span>
-      <span>Статус: {card.status}. Числа [Д] — данные (техосмотр DVSA, Великобритания, 2025, лицензия OGL v3.0); [О] — оценка редакции.</span>
+      <span>Статус: {card.status}. Данные — техосмотр DVSA, Великобритания, 2025 (лицензия OGL v3.0); остальное — оценка редакции.</span>
       <span>Материал информационный и не заменяет диагностику у специалиста. Текст подготовлен с помощью ИИ; ответственность за рекомендации несут оператор сайта и эксперт, указанный в карточке · <a href={`${card.url}sources/`}>Источники</a> · <a href={B + `/cards/${card.slug}.md`}>Markdown</a></span>
     </div>
   </article>

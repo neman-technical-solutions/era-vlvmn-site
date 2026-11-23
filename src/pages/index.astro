@@ -45,6 +45,9 @@ const website = { '@context': 'https://schema.org', '@type': 'WebSite', name: SI
   <p class="t-meta hint">ИИ-механик может ошибаться.</p>
 
   <BotButton tag="home" />
+  <!-- выбор Игоря 23.11 (ERA-VLVMN-115, вариант 1): мини-приложение напрямую — startapp передаёт initData, гараж узнаёт покупателя;
+       нужно главное мини-приложение бота в BotFather -->
+  <a id="garagelink-home" class="btn-secondary t-button" style="text-align:center;text-decoration:none" href={`${SITE.bot.url}?startapp`} target="_blank" rel="noopener">Открыть «Мой автомобиль»</a>
 
   <Links />
 
@@ -53,7 +56,7 @@ const website = { '@context': 'https://schema.org', '@type': 'WebSite', name: SI
     <div class="chips" style="margin-top:var(--era-step-2)">
       {SITE.models.map((m) => <a class="t-button" href={B + `/models/${m.toLowerCase()}/`}>{m}</a>)}
     </div>
-    <p class="note t-meta" style="margin-top:var(--era-step-3)">{cards.length} карточек: симптом → причины по частоте → что проверить самому → когда к специалисту → запчасти. По данным техосмотра DVSA 2025 (591 792 теста легковых Volvo [Д]) и документации Volvo Cars.</p>
+    <p class="note t-meta" style="margin-top:var(--era-step-3)">{cards.length} карточек: симптом → причины по частоте → что проверить самому → когда к специалисту → запчасти. По данным техосмотра DVSA 2025 (591 792 теста легковых Volvo) и документации Volvo Cars.</p>
   </section>
 
   <script is:inline set:html={`window.CARDS=${JSON.stringify(index)};window.DEMO=${SITE.demo};`} />

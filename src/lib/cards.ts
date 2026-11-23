@@ -61,14 +61,19 @@ function rewriteLinks(md: string, card: { slug: string }, known: Map<string, str
   });
   return md;
 }
+// ERA-VLVMN-115 (указание Игоря 23.11): пометки [Д], [О], [Р], [ОТКРЫТО…] — для документов, покупателю не показываются
+const MARKS = /\s?\[(?:Д|О|Р|ОТКРЫТО)(?::[^\]]*)?\]/g;
+export function unmark(s: string): string {
+  return s.replace(MARKS, '');
+}
 export function md(s: string): string {
-  return marked.parse(s) as string;
+  return marked.parse(unmark(s)) as string;
 }
 function inline(s: string): string {
-  return marked.parseInline(s) as string;
+  return marked.parseInline(unmark(s)) as string;
 }
 function strip(s: string): string {
-  return s.replace(/\*\*|__|`/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').trim();
+  return unmark(s).replace(/\*\*|__|`/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').trim();
 }
 
 // ---------- оси ----------
@@ -212,7 +217,7 @@ export function loadCards(): Card[] {
       url: B + `/cards/${slug}/`,
       file,
       raw,
-      title: String(data.title ?? ''),
+      title: unmark(String(data.title ?? '')),
       models,
       platform: String(data.platform ?? ''),
       situation,
@@ -226,7 +231,7 @@ export function loadCards(): Card[] {
       review_by: String(data.review_by ?? ''),
       sources: sourcesArr,
       evidence,
-      short: String(data.short ?? ''),
+      short: unmark(String(data.short ?? '')),
       verified: /^проверено/i.test(status) && !!data.reviewer,
       volvoDoc: sourcesArr.some((s) => /volvo cars|volvocars\.com|vida|tech info/i.test(s)),
       applicability: parsed.applicability,
