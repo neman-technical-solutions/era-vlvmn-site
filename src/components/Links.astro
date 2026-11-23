@@ -7,7 +7,6 @@ import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
 const e = SITE.expert;
 const tg = e.telegram ? `https://t.me/${e.telegram}` : `https://t.me/${e.phone}`;
-const wa = `https://wa.me/${e.phone.replace('+', '')}`;
 const bot = `${SITE.bot.url}?start=home`;
 ---
 <div class="links" data-nosnippet>
@@ -24,7 +23,7 @@ const bot = `${SITE.bot.url}?start=home`;
     <span class="cap t-label">{e.alias}</span><span class="cap t-meta">{e.line}</span>
     <div class="menu">
       <a class="t-input" href={`tel:${e.phone}`}>Позвонить</a>
-      <a class="t-input" href={wa} target="_blank" rel="noopener">WhatsApp</a>
+      <span class="t-input" title="В MAX контакт находят по номеру">MAX · {e.phoneHuman}</span>
       <a class="t-input" href={tg} target="_blank" rel="noopener">Telegram</a>
     </div>
   </div>
