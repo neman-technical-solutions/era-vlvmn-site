@@ -4,7 +4,6 @@
 // 15.11.2026 (ERA-VLVMN-30): кнопки микрофона сняты; двигатель — список в одной строке с пробегом; ссылка в бот несёт модель, год и двигатель (start=home_<м>_<г>_<дв>).
 import Base from '../layouts/Base.astro';
 import Links from '../components/Links.astro';
-import WriteButton from '../components/WriteButton.astro';
 import BotButton from '../components/BotButton.astro';
 import { loadCards } from '../lib/cards';
 import { SITE } from '../../site.config.mjs';
@@ -46,8 +45,6 @@ const website = { '@context': 'https://schema.org', '@type': 'WebSite', name: SI
   <p class="t-meta hint">ИИ-механик может ошибаться.</p>
 
   <BotButton tag="home" />
-  <WriteButton tag="home" />
-  <p class="t-meta">В боте — цена и наличие деталей у продавца и контроль ТО: кнопка «Мой автомобиль» хранит пробег и напоминает о сроке.</p>
 
   <Links />
 

@@ -125,7 +125,8 @@ code{font-family:ui-monospace,monospace;font-size:0.9em;color:var(--era-muted)}
 /* две точки перехода */
 .links{display:grid;grid-template-columns:1fr 1fr;gap:var(--era-step-1)}
 .link{display:flex;flex-direction:column;gap:var(--era-step-1);background:var(--era-surface);padding:var(--era-step-3);border-bottom:var(--era-stripe-h) solid var(--era-line)}
-.link.is-primary{border-bottom-color:var(--era-accent)}
+.link.is-primary{border-bottom-color:var(--era-mode-battle)} /* указание Игоря 23.11 (ERA-VLVMN-115): бот — бирюзовая полоса, Ян — оранжевая */
+.link.is-expert{border-bottom-color:var(--era-accent)}
 .link .qr{width:124px;height:124px;background:#fff;padding:4px;align-self:center} /* белое поле — требование сканера (LOG 09.11.2026, 0.58) */
 .link .qr svg{width:100%;height:100%;display:block}
 .link .cap{display:block}
