@@ -6,7 +6,7 @@
 import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
 const e = SITE.expert;
-const tg = e.telegram ? `https://t.me/${e.telegram}` : `https://t.me/${e.phone}`;
+const tg = `${SITE.bot.url}?start=chat_contacts`;   // выбор Игоря 23.11 (ERA-VLVMN-115, О-10): обращение — делом на столе Яна, не на личный номер
 const bot = `${SITE.bot.url}?start=home`;
 ---
 <div class="links" data-nosnippet>

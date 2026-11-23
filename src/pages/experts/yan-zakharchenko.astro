@@ -9,7 +9,7 @@ const all = loadCards();
 const e = SITE.expert;
 const confirmed = all.filter((c) => c.reviewer === e.name);
 const waiting = all.filter((c) => !c.reviewer);
-const tg = e.telegram ? `https://t.me/${e.telegram}` : `https://t.me/${e.phone}`;
+const tg = `${SITE.bot.url}?start=chat_contacts`;   // выбор Игоря 23.11 (ERA-VLVMN-115, О-10): обращение — делом на столе Яна, не на личный номер
 const person = { '@context': 'https://schema.org', '@type': 'Person', '@id': `${SITE.url}${e.url}#person`, name: e.name, alternateName: e.alias, url: `${SITE.url}${e.url}`, telephone: e.phone, jobTitle: 'Эксперт по Volvo', knowsAbout: ['Volvo XC90', 'Volvo XC60', 'Volvo XC70', 'подвеска', 'ТО Volvo', 'запчасти Volvo'], address: { '@type': 'PostalAddress', addressLocality: SITE.city, addressCountry: 'RU' }, worksFor: { '@id': `${SITE.url}${B}/#operator` } };
 ---
 <Base page="expert" title={`${e.name} (${e.alias}) — эксперт по Volvo, ${SITE.city} — ${SITE.name}`} description={`Эксперт картотеки ${SITE.name}: запчасти и ремонт Volvo с 2020 года. Связаться: телефон, MAX, Telegram.`} jsonld={[person]} crumbs={[{ title: e.name }]}>
