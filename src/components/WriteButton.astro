@@ -1,0 +1,8 @@
+---
+// Кнопка «Написать Яну в Telegram» (ERA-VLVMN-SPC-19 0.11 разд. 3 шаг 1; 23.11.2026, ERA-VLVMN-114). Ссылка несёт метку
+// chat_<метка страницы>: бот переходит в режим «переписка», обращение становится делом на экране Яна. Метка — код
+// карточки (VM-0104) или слово страницы; без ПД. Отличие от BotButton: тот ведёт в подбор по VIN.
+import { SITE } from '../../site.config.mjs';
+const { tag = 'site', label = 'Написать Яну в Telegram' } = Astro.props;
+---
+<a id={`writelink-${tag}`} data-tag={`chat_${tag}`} class="btn-secondary t-button" style="text-align:center;text-decoration:none" href={`${SITE.bot.url}?start=chat_${tag}`} target="_blank" rel="noopener">{label}</a>
