@@ -45,9 +45,9 @@ const website = { '@context': 'https://schema.org', '@type': 'WebSite', name: SI
   <p class="t-meta hint">ИИ-механик может ошибаться.</p>
 
   <BotButton tag="home" />
-  <!-- выбор Игоря 23.11 (ERA-VLVMN-115, вариант 1): мини-приложение напрямую — startapp передаёт initData, гараж узнаёт покупателя;
-       нужно главное мини-приложение бота в BotFather -->
-  <a id="garagelink-home" class="btn-secondary t-button" style="text-align:center;text-decoration:none" href={`${SITE.bot.url}?startapp`} target="_blank" rel="noopener">Открыть «Мой автомобиль»</a>
+  <!-- выбор Игоря 23.11 (ERA-VLVMN-115, вариант 1): прямая ссылка на мини-приложение t.me/VolvomenBot/garage (BotFather /newapp, короткое имя garage, 24.11):
+       открывает гараж сразу во всех клиентах Telegram, передаёт initData -->
+  <a id="garagelink-home" class="btn-secondary t-button" style="text-align:center;text-decoration:none" href={`${SITE.bot.url}/garage`} target="_blank" rel="noopener">Открыть «Мой автомобиль»</a>
 
   <Links />
 
