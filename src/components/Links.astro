@@ -6,7 +6,8 @@
 import { SITE } from '../../site.config.mjs';
 const B = SITE.base;
 const e = SITE.expert;
-const tg = `${SITE.bot.url}?start=chat_contacts`;   // выбор Игоря 23.11 (ERA-VLVMN-115, О-10): обращение — делом на столе Яна, не на личный номер
+// выбор Игоря 23.11 (ERA-VLVMN-115): под кодом бота — «Открыть в Telegram», под кодом эксперта — только «Написать в MAX»;
+// ссылка MAX — SITE.expert.max (max.ru/u/… от Яна); пока пусто — номер для поиска в MAX, код — vCard
 const bot = `${SITE.bot.url}?start=home`;
 ---
 <div class="links" data-nosnippet>
@@ -22,9 +23,9 @@ const bot = `${SITE.bot.url}?start=home`;
 </span>
     <span class="cap t-label">{e.alias}</span><span class="cap t-meta">{e.line}</span>
     <div class="menu">
-      <a class="t-input" href={`tel:${e.phone}`}>Позвонить</a>
-      <span class="t-input" title="В MAX контакт находят по номеру">MAX · {e.phoneHuman}</span>
-      <a class="t-input" href={tg} target="_blank" rel="noopener">Telegram</a>
+      {e.max
+        ? <a class="t-input" href={e.max} target="_blank" rel="noopener">Написать в MAX</a>
+        : <span class="t-input" title="В MAX контакт находят по номеру">Написать в MAX · {e.phoneHuman}</span>}
     </div>
   </div>
 </div>
